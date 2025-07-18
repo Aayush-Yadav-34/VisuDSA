@@ -1,0 +1,306 @@
+/* Custom styles for the Data Structures Learning Platform */
+
+/* Code editor styling */
+.CodeMirror {
+    height: 400px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.CodeMirror-focused {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Output container styling */
+#output-container {
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.output-success {
+    color: var(--bs-success);
+}
+
+.output-error {
+    color: var(--bs-danger);
+}
+
+.output-info {
+    color: var(--bs-info);
+}
+
+/* Visualization container */
+#visualization-container {
+    background-color: var(--bs-body-bg);
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 0.5rem;
+    position: relative;
+}
+
+/* SVG elements for visualizations */
+.node {
+    fill: var(--bs-primary);
+    stroke: var(--bs-border-color);
+    stroke-width: 2;
+    cursor: pointer;
+}
+
+.node-text {
+    fill: white;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+
+.link {
+    stroke: var(--bs-secondary);
+    stroke-width: 2;
+    fill: none;
+}
+
+.link.animated {
+    stroke-dasharray: 5,5;
+    animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Array visualization */
+.array-cell {
+    fill: var(--bs-primary);
+    stroke: var(--bs-border-color);
+    stroke-width: 2;
+}
+
+.array-cell.highlighted {
+    fill: var(--bs-warning);
+    stroke: var(--bs-warning);
+}
+
+.array-cell.selected {
+    fill: var(--bs-success);
+    stroke: var(--bs-success);
+}
+
+.array-index {
+    fill: var(--bs-secondary);
+    font-size: 12px;
+    text-anchor: middle;
+}
+
+/* Stack visualization */
+.stack-item {
+    fill: var(--bs-info);
+    stroke: var(--bs-border-color);
+    stroke-width: 2;
+}
+
+.stack-item.top {
+    fill: var(--bs-warning);
+    stroke: var(--bs-warning);
+}
+
+/* Queue visualization */
+.queue-item {
+    fill: var(--bs-success);
+    stroke: var(--bs-border-color);
+    stroke-width: 2;
+}
+
+.queue-item.front {
+    fill: var(--bs-warning);
+    stroke: var(--bs-warning);
+}
+
+.queue-item.rear {
+    fill: var(--bs-info);
+    stroke: var(--bs-info);
+}
+
+/* Quiz styling */
+.question-container {
+    background-color: var(--bs-light);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .question-container {
+    background-color: var(--bs-dark);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.result-correct {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-left: 4px solid var(--bs-success);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+}
+
+.result-incorrect {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left: 4px solid var(--bs-danger);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+}
+
+/* Progress indicators */
+.progress {
+    height: 8px;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Learning path styling */
+.learning-step {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--bs-body-bg);
+    border: 2px solid var(--bs-border-color);
+}
+
+/* Feature cards */
+.feature-icon {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Animation utilities */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .CodeMirror {
+        height: 300px;
+    }
+    
+    #output-container {
+        max-height: 200px;
+    }
+    
+    #visualization-container {
+        min-height: 300px;
+    }
+    
+    .learning-step {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Operations log styling */
+#operations-log {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.operation-entry {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.operation-entry:last-child {
+    border-bottom: none;
+}
+
+/* Loading states */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--bs-border-color);
+    border-radius: 50%;
+    border-top-color: var(--bs-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Syntax highlighting improvements */
+pre code {
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    display: block;
+    overflow-x: auto;
+}
+
+/* Button effects - reduced hover */
+.btn {
+    transition: background-color 0.2s ease;
+}
+
+/* Card effects - reduced hover */
+.card {
+    transition: box-shadow 0.2s ease;
+}
+
+/* Accordion customizations */
+.accordion-button:not(.collapsed) {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: var(--bs-primary);
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-primary);
+}

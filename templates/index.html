@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Home - VisuDSA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row text-center mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-project-diagram text-primary me-3"></i>
+                VisuDSA
+            </h1>
+            <p class="lead mb-4">
+                Master data structures through comprehensive theory, hands-on coding, 
+                interactive visualizations, and challenging quizzes.
+            </p>
+            
+            {% if current_user.is_authenticated %}
+                <div class="alert alert-success mb-4">
+                    <i class="fas fa-user-check me-2"></i>
+                    Welcome back, <strong>{{ current_user.username }}</strong>! 
+                    {% if current_user.is_admin %}
+                        <span class="badge bg-danger ms-2">Admin</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('theory') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-book me-2"></i>Start Learning
+                </a>
+                <a href="{{ url_for('visualizer') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-eye me-2"></i>View Demos
+                </a>
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-book fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Concise Theory</h5>
+                    <p class="card-text">
+                        Learn fundamental concepts with clear explanations and practical examples.
+                    </p>
+                    <a href="{{ url_for('theory') }}" class="btn btn-outline-primary">
+                        Explore Theory
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-code fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Live Code Editor</h5>
+                    <p class="card-text">
+                        Practice coding with syntax highlighting and real-time execution.
+                    </p>
+                    <a href="{{ url_for('code_editor') }}" class="btn btn-outline-success">
+                        Start Coding
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-eye fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">Visual Simulators</h5>
+                    <p class="card-text">
+                        Watch data structures in action with interactive step-by-step visualizations.
+                    </p>
+                    <a href="{{ url_for('visualizer') }}" class="btn btn-outline-info">
+                        Visualize
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-question-circle fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Interactive Quizzes</h5>
+                    <p class="card-text">
+                        Test your knowledge with immediate feedback and detailed explanations.
+                    </p>
+                    <a href="{{ url_for('quiz') }}" class="btn btn-outline-warning">
+                        Take Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Path -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Learning Path</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <div class="learning-step">
+                                <i class="fas fa-book fa-2x text-primary"></i>
+                                <h6 class="mt-2">1. Theory</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-1 text-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="learning-step">
+                                <i class="fas fa-code fa-2x text-success"></i>
+                                <h6 class="mt-2">2. Practice</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-1 text-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="learning-step">
+                                <i class="fas fa-eye fa-2x text-info"></i>
+                                <h6 class="mt-2">3. Visualize</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-1 text-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="learning-step">
+                                <i class="fas fa-question-circle fa-2x text-warning"></i>
+                                <h6 class="mt-2">4. Test</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-1 text-center">
+                            <i class="fas fa-trophy fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Your Progress</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div id="progress-overview" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading progress...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load and display progress overview
+document.addEventListener('DOMContentLoaded', function() {
+    loadProgressOverview();
+});
+
+function loadProgressOverview() {
+    fetch('/progress')
+        .then(response => response.json())
+        .then(data => {
+            displayProgressOverview(data);
+        })
+        .catch(error => {
+            console.error('Error loading progress:', error);
+            document.getElementById('progress-overview').innerHTML = 
+                '<p class="text-muted">No progress data available yet. Start learning to track your progress!</p>';
+        });
+}
+
+function displayProgressOverview(progressData) {
+    const container = document.getElementById('progress-overview');
+    
+    if (Object.keys(progressData).length === 0) {
+        container.innerHTML = 
+            '<p class="text-muted">No progress data available yet. Start learning to track your progress!</p>';
+        return;
+    }
+    
+    let html = '<div class="row g-3">';
+    
+    const modules = ['theory', 'quiz'];
+    const moduleNames = {
+        'theory': 'Theory Sections',
+        'quiz': 'Quizzes Completed'
+    };
+    const moduleIcons = {
+        'theory': 'fas fa-book',
+        'quiz': 'fas fa-question-circle'
+    };
+    
+    modules.forEach(module => {
+        const moduleData = progressData[module] || {};
+        const completed = Object.values(moduleData).filter(item => item.completed).length;
+        const total = Object.keys(moduleData).length;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        html += `
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="${moduleIcons[module]} fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${moduleNames[module]}</h6>
+                        <div class="progress mb-1" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: ${percentage}%" 
+                                 aria-valuenow="${percentage}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">${completed}/${total} completed (${percentage}%)</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+</script>
+{% endblock %}

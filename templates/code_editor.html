@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Code Editor - Interactive Data Structures Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Editor Panel -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-code me-2"></i>
+                        Live Code Editor
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" id="language-select" style="width: auto;">
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                        </select>
+                        <button class="btn btn-success btn-sm" id="run-code">
+                            <i class="fas fa-play me-1"></i>
+                            Run Code
+                        </button>
+                        <button class="btn btn-secondary btn-sm" id="clear-code">
+                            <i class="fas fa-trash me-1"></i>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <textarea id="code-editor" class="form-control border-0"></textarea>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-terminal me-2"></i>
+                        Output
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="output-container">
+                        <div class="text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Write your code and click "Run Code" to see the output here.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples and Templates -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Code Examples
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="examples-accordion">
+                        <!-- Array Examples -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#array-examples">
+                                    Arrays
+                                </button>
+                            </h2>
+                            <div id="array-examples" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm load-example" 
+                                                data-language="python" 
+                                                data-code="# Array operations example
+arr = [1, 2, 3, 4, 5]
+print('Original array:', arr)
+
+# Insert element
+arr.insert(2, 10)
+print('After inserting 10 at index 2:', arr)
+
+# Remove element
+arr.remove(10)
+print('After removing 10:', arr)
+
+# Search for element
+index = arr.index(3)
+print('Index of element 3:', index)
+
+# Sort array
+arr.sort(reverse=True)
+print('Sorted in descending order:', arr)">
+                                            Array Operations
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm load-example" 
+                                                data-language="python" 
+                                                data-code="# Linear search implementation
+def linear_search(arr, target):
+    for i in range(len(arr)):
+        if arr[i] == target:
+            return i
+    return -1
+
+# Test the function
+numbers = [64, 34, 25, 12, 22, 11, 90]
+target = 22
+result = linear_search(numbers, target)
+
+if result != -1:
+    print(f'Element {target} found at index {result}')
+else:
+    print(f'Element {target} not found')">
+                                            Linear Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stack Examples -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#stack-examples">
+                                    Stacks
+                                </button>
+                            </h2>
+                            <div id="stack-examples" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm load-example" 
+                                                data-language="python" 
+                                                data-code="# Stack implementation using list
+class Stack:
+    def __init__(self):
+        self.items = []
+    
+    def push(self, item):
+        self.items.append(item)
+    
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
+        return None
+    
+    def peek(self):
+        if not self.is_empty():
+            return self.items[-1]
+        return None
+    
+    def is_empty(self):
+        return len(self.items) == 0
+    
+    def size(self):
+        return len(self.items)
+
+# Test the stack
+stack = Stack()
+stack.push(1)
+stack.push(2)
+stack.push(3)
+
+print('Stack size:', stack.size())
+print('Top element:', stack.peek())
+print('Popped element:', stack.pop())
+print('Stack after pop:', stack.items)">
+                                            Stack Implementation
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm load-example" 
+                                                data-language="python" 
+                                                data-code="# Balanced parentheses checker
+def is_balanced(expression):
+    stack = []
+    pairs = {'(': ')', '[': ']', '{': '}'}
+    
+    for char in expression:
+        if char in pairs:  # Opening bracket
+            stack.append(char)
+        elif char in pairs.values():  # Closing bracket
+            if not stack:
+                return False
+            if pairs[stack.pop()] != char:
+                return False
+    
+    return len(stack) == 0
+
+# Test cases
+test_cases = ['()', '()[]{}', '([{}])', '(()', ')']
+
+for test in test_cases:
+    result = is_balanced(test)
+    print(f'{test}: {result}')">
+                                            Balanced Parentheses
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Queue Examples -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#queue-examples">
+                                    Queues
+                                </button>
+                            </h2>
+                            <div id="queue-examples" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm load-example" 
+                                                data-language="python" 
+                                                data-code="# Queue implementation using collections.deque
+from collections import deque
+
+class Queue:
+    def __init__(self):
+        self.items = deque()
+    
+    def enqueue(self, item):
+        self.items.append(item)
+    
+    def dequeue(self):
+        if not self.is_empty():
+            return self.items.popleft()
+        return None
+    
+    def front(self):
+        if not self.is_empty():
+            return self.items[0]
+        return None
+    
+    def is_empty(self):
+        return len(self.items) == 0
+    
+    def size(self):
+        return len(self.items)
+
+# Test the queue
+queue = Queue()
+queue.enqueue('A')
+queue.enqueue('B')
+queue.enqueue('C')
+
+print('Queue size:', queue.size())
+print('Front element:', queue.front())
+print('Dequeued element:', queue.dequeue())
+print('Queue after dequeue:', list(queue.items))">
+                                            Queue Implementation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Linked List Examples -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#linkedlist-examples">
+                                    Linked Lists
+                                </button>
+                            </h2>
+                            <div id="linkedlist-examples" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm load-example" 
+                                                data-language="python" 
+                                                data-code="# Simple linked list implementation
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+    
+    def append(self, data):
+        new_node = Node(data)
+        if not self.head:
+            self.head = new_node
+            return
+        current = self.head
+        while current.next:
+            current = current.next
+        current.next = new_node
+    
+    def prepend(self, data):
+        new_node = Node(data)
+        new_node.next = self.head
+        self.head = new_node
+    
+    def display(self):
+        elements = []
+        current = self.head
+        while current:
+            elements.append(current.data)
+            current = current.next
+        return elements
+
+# Test the linked list
+ll = LinkedList()
+ll.append(1)
+ll.append(2)
+ll.append(3)
+ll.prepend(0)
+
+print('Linked list:', ll.display())">
+                                            Linked List Basic
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tips me-2"></i>
+                        Quick Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Use <code>print()</code> to see output
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-info me-2"></i>
+                            Code execution has a 5-second timeout
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-shield-alt text-danger me-2"></i>
+                            File operations and network access are restricted
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-keyboard text-primary me-2"></i>
+                            Use Ctrl+Enter to run code quickly
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/code_editor.js') }}"></script>
+{% endblock %}

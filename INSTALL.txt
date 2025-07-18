@@ -1,0 +1,41 @@
+VisuDSA - Quick Installation Guide
+=====================================
+
+OPTION 1: Automatic Setup (Recommended)
+---------------------------------------
+1. Extract all files to a folder
+2. Open terminal/command prompt in that folder
+3. Run: python setup.py
+4. Run: python main.py
+5. Open browser to: http://localhost:5000
+
+OPTION 2: Manual Setup
+---------------------
+1. Extract all files to a folder
+2. Install Python 3.8+ if not installed
+3. Install packages:
+   pip install flask flask-sqlalchemy flask-login werkzeug gunicorn
+4. Run: python main.py
+5. Open browser to: http://localhost:5000
+
+Default Login
+-------------
+Username: admin
+Password: admin123
+
+System Requirements
+------------------
+- Python 3.8 or higher
+- 50MB free disk space
+- Modern web browser
+- Internet connection (for CSS/JS libraries)
+
+Troubleshooting
+--------------
+- Port 5000 in use: Change port in main.py
+- Permission errors: Run as administrator
+- Package errors: Update pip first (pip install --upgrade pip)
+
+Support
+-------
+Check README.md for detailed documentation and troubleshooting.

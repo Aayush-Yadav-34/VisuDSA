@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - VisuDSA{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shield-alt"></i> Admin Dashboard</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-home"></i> Back to Platform
+        </a>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h3 class="card-title">{{ total_users }}</h3>
+                    <p class="card-text">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-code fa-2x text-success mb-2"></i>
+                    <h3 class="card-title">{{ total_submissions }}</h3>
+                    <p class="card-text">Code Submissions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-question-circle fa-2x text-warning mb-2"></i>
+                    <h3 class="card-title">{{ total_quiz_attempts }}</h3>
+                    <p class="card-text">Quiz Attempts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                    <h3 class="card-title">Active</h3>
+                    <p class="card-text">Platform Status</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Recent Users -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-plus"></i> Recent Users</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_users %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Joined</th>
+                                        <th>Last Login</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in recent_users %}
+                                    <tr>
+                                        <td>
+                                            {{ user.username }}
+                                            {% if user.is_admin %}
+                                                <span class="badge bg-danger ms-1">Admin</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted small">{{ user.email[:20] }}{% if user.email|length > 20 %}...{% endif %}</td>
+                                        <td class="text-muted small">{{ user.created_at.strftime('%m/%d') }}</td>
+                                        <td class="text-muted small">
+                                            {% if user.last_login %}
+                                                {{ user.last_login.strftime('%m/%d %H:%M') }}
+                                            {% else %}
+                                                Never
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No users yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Code Submissions -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-code"></i> Recent Code Submissions</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_submissions %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Language</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for submission in recent_submissions %}
+                                    <tr>
+                                        <td class="small">
+                                            {% if submission.user %}
+                                                {{ submission.user.username }}
+                                            {% else %}
+                                                Anonymous
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ submission.language }}</span>
+                                        </td>
+                                        <td>
+                                            {% if submission.error %}
+                                                <span class="badge bg-danger">Error</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Success</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted small">{{ submission.timestamp.strftime('%m/%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No submissions yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> System Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Platform Features:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Theory Learning Modules</li>
+                                <li><i class="fas fa-check text-success"></i> Interactive Code Editor</li>
+                                <li><i class="fas fa-check text-success"></i> Data Structure Visualizers</li>
+                                <li><i class="fas fa-check text-success"></i> Interactive Quizzes</li>
+                                <li><i class="fas fa-check text-success"></i> Progress Tracking</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Supported Data Structures:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-dot-circle text-primary"></i> Arrays & Linked Lists</li>
+                                <li><i class="fas fa-dot-circle text-primary"></i> Stacks & Queues</li>
+                                <li><i class="fas fa-dot-circle text-primary"></i> Trees & Graphs</li>
+                                <li><i class="fas fa-dot-circle text-primary"></i> Hash Tables</li>
+                                <li><i class="fas fa-dot-circle text-primary"></i> Advanced Algorithms</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

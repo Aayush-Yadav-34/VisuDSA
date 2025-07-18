@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Visualizer - Interactive Data Structures Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Controls Panel -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Data Structure
+                    </h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for structure in supported_structures %}
+                    <a href="{{ url_for('visualizer', data_structure=structure) }}" 
+                       class="list-group-item list-group-item-action {% if data_structure == structure %}active{% endif %}">
+                        <i class="fas fa-cube me-2"></i>
+                        {{ structure.replace('_', ' ').title() }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if data_structure %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-play me-2"></i>
+                        Controls
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="controls-container">
+                        <!-- Controls will be dynamically loaded based on data structure -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info me-2"></i>
+                        Operations Log
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="operations-log" style="max-height: 200px; overflow-y: auto;">
+                        <div class="text-muted small">No operations yet</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Visualization Panel -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>
+                        {% if data_structure %}
+                            {{ data_structure.replace('_', ' ').title() }} Visualization
+                        {% else %}
+                            Data Structure Visualizer
+                        {% endif %}
+                    </h5>
+                    {% if data_structure %}
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-success btn-sm" id="play-animation">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" id="pause-animation">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" id="reset-visualization">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if data_structure %}
+                    <div id="visualization-container" style="min-height: 400px;">
+                        <!-- Visualization will be rendered here -->
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-eye fa-4x text-muted mb-4"></i>
+                        <h3>Data Structure Visualizer</h3>
+                        <p class="lead text-muted mb-4">
+                            Select a data structure from the sidebar to start exploring.
+                        </p>
+                        <p>Available visualizations:</p>
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    {% for structure in supported_structures %}
+                                    <div class="col-md-6">
+                                        <div class="card border-secondary">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-cube fa-2x text-primary mb-2"></i>
+                                                <h6>{{ structure.replace('_', ' ').title() }}</h6>
+                                                <a href="{{ url_for('visualizer', data_structure=structure) }}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    Explore
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if data_structure %}
+            <!-- Step-by-step explanation -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list-ol me-2"></i>
+                        Step-by-step Explanation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="step-explanation">
+                        <div class="text-muted">Perform an operation to see step-by-step explanation</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/visualizer.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if data_structure %}
+    initializeVisualizer('{{ data_structure }}');
+    {% endif %}
+});
+</script>
+{% endblock %}

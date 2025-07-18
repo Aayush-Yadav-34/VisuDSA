@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Theory - Interactive Data Structures Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>
+                        Data Structures
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for section in theory_sections %}
+                    <a href="{{ url_for('theory', data_structure=section) }}" 
+                       class="list-group-item list-group-item-action {% if data_structure == section %}active{% endif %}">
+                        <i class="fas fa-chevron-right me-2"></i>
+                        {{ section.replace('_', ' ').title() }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            {% if content %}
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-cube me-2"></i>
+                        {{ content.title }}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <!-- Overview -->
+                    <div class="mb-4">
+                        <h4>Overview</h4>
+                        <p class="lead">{{ content.overview }}</p>
+                    </div>
+
+                    <!-- Key Concepts -->
+                    <div class="mb-4">
+                        <h4>Key Concepts</h4>
+                        <ul class="list-unstyled">
+                            {% for concept in content.key_concepts %}
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong>{{ concept.name }}:</strong> {{ concept.description }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Operations -->
+                    <div class="mb-4">
+                        <h4>Common Operations</h4>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Operation</th>
+                                        <th>Description</th>
+                                        <th>Time Complexity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for operation in content.operations %}
+                                    <tr>
+                                        <td><code>{{ operation.name }}</code></td>
+                                        <td>{{ operation.description }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ operation.time_complexity }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Use Cases -->
+                    <div class="mb-4">
+                        <h4>Use Cases</h4>
+                        <div class="row">
+                            {% for use_case in content.use_cases %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-secondary">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                                            {{ use_case.title }}
+                                        </h6>
+                                        <p class="card-text">{{ use_case.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Code Examples -->
+                    <div class="mb-4">
+                        <h4>Code Examples</h4>
+                        {% for example in content.code_examples %}
+                        <div class="mb-3">
+                            <h6>{{ example.title }}</h6>
+                            <pre><code class="language-{{ example.language }}">{{ example.code }}</code></pre>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
+                        <div>
+                            <a href="{{ url_for('code_editor') }}" class="btn btn-success">
+                                <i class="fas fa-code me-2"></i>
+                                Practice Coding
+                            </a>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('visualizer', data_structure=data_structure) }}" 
+                               class="btn btn-info">
+                                <i class="fas fa-eye me-2"></i>
+                                Visualize
+                            </a>
+                            <a href="{{ url_for('quiz', quiz_id=data_structure) }}" 
+                               class="btn btn-warning ms-2">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Take Quiz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-book fa-4x text-muted mb-4"></i>
+                    <h3>Data Structures Theory</h3>
+                    <p class="lead text-muted mb-4">
+                        Select a data structure from the sidebar to start learning.
+                    </p>
+                    <p>Each section includes:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Comprehensive explanations</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Key concepts and terminology</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Time complexity analysis</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Real-world use cases</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Code examples</li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
