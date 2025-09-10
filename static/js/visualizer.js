@@ -306,6 +306,14 @@ function getInitialData(dataStructure) {
                 { value: 20, prev: 0, next: 2 },
                 { value: 30, prev: 1, next: null }
             ], highlightedIndex: -1 };
+        case 'priority_queue':
+            // Heap as array of {value, priority}
+            return { heap: [
+                { value: 40, priority: 40 },
+                { value: 30, priority: 30 },
+                { value: 20, priority: 20 },
+                { value: 10, priority: 10 }
+            ], highlightedIndex: -1 };
         case 'stack':
             return { elements: [1, 2, 3], highlightedIndex: -1 };
         case 'queue':
@@ -338,6 +346,9 @@ function renderVisualization(dataStructure, svg) {
         case 'doubly_linked_list':
             renderDoublyLinkedListVisualization(svg);
             break;
+        case 'priority_queue':
+            renderPriorityQueueVisualization(svg);
+            break;
         case 'stack':
             renderStackVisualization(svg);
             break;
@@ -348,6 +359,84 @@ function renderVisualization(dataStructure, svg) {
             renderBinaryTreeVisualization(svg);
             break;
     }
+}
+/**
+ * Render priority queue (heap) visualization
+ */
+function renderPriorityQueueVisualization(svg) {
+    const heap = visualizationData.heap;
+    if (!heap || heap.length === 0) return;
+    const nodeRadius = 28;
+    const levelHeight = 90;
+    const rootX = 400;
+    const rootY = 60;
+
+    // Calculate positions for each node in the heap
+    function getNodePosition(index) {
+        if (index === 0) return { x: rootX, y: rootY };
+        const level = Math.floor(Math.log2(index + 1));
+        const nodesInLevel = Math.pow(2, level);
+        const posInLevel = index - (nodesInLevel - 1);
+        const width = 800 / (nodesInLevel + 1);
+        return {
+            x: width * (posInLevel + 1),
+            y: rootY + level * levelHeight
+        };
+    }
+
+    // Draw edges
+    heap.forEach((node, i) => {
+        const left = 2 * i + 1;
+        const right = 2 * i + 2;
+        const pos = getNodePosition(i);
+        if (left < heap.length) {
+            const leftPos = getNodePosition(left);
+            svg.append('line')
+                .attr('x1', pos.x)
+                .attr('y1', pos.y + nodeRadius)
+                .attr('x2', leftPos.x)
+                .attr('y2', leftPos.y - nodeRadius)
+                .attr('stroke', '#6c757d')
+                .attr('stroke-width', 2);
+        }
+        if (right < heap.length) {
+            const rightPos = getNodePosition(right);
+            svg.append('line')
+                .attr('x1', pos.x)
+                .attr('y1', pos.y + nodeRadius)
+                .attr('x2', rightPos.x)
+                .attr('y2', rightPos.y - nodeRadius)
+                .attr('stroke', '#6c757d')
+                .attr('stroke-width', 2);
+        }
+    });
+
+    // Draw nodes
+    heap.forEach((node, i) => {
+        const pos = getNodePosition(i);
+        svg.append('circle')
+            .attr('cx', pos.x)
+            .attr('cy', pos.y)
+            .attr('r', nodeRadius)
+            .attr('fill', '#0dcaf0')
+            .attr('stroke', '#6c757d')
+            .attr('stroke-width', 2);
+        svg.append('text')
+            .attr('x', pos.x)
+            .attr('y', pos.y - 6)
+            .text(node.value)
+            .attr('fill', 'white')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 18)
+            .attr('font-weight', 'bold');
+        svg.append('text')
+            .attr('x', pos.x)
+            .attr('y', pos.y + 18)
+            .text('P:' + node.priority)
+            .attr('fill', '#ffc107')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 12);
+    });
 }
 /**
  * Render doubly linked list visualization
@@ -770,6 +859,9 @@ function setupDataStructureControls() {
         case 'doubly_linked_list':
             setupDoublyLinkedListControls();
             break;
+        case 'priority_queue':
+            setupPriorityQueueControls();
+            break;
         case 'stack':
             setupStackControls();
             break;
@@ -780,6 +872,93 @@ function setupDataStructureControls() {
             setupBinaryTreeControls();
             break;
     }
+}
+/**
+ * Set up priority queue (heap) controls
+ */
+function setupPriorityQueueControls() {
+    // Insert
+    document.getElementById('pq-insert')?.addEventListener('click', () => {
+        const value = parseInt(document.getElementById('pq-value').value);
+        const priority = parseInt(document.getElementById('pq-priority').value);
+        if (isNaN(value) || isNaN(priority)) {
+            DSLearningPlatform.showToast('Enter valid value and priority', 'warning');
+            return;
+        }
+        visualizationData.heap.push({ value, priority });
+        heapifyUp(visualizationData.heap);
+        logOperation(`Inserted ${value} with priority ${priority}`);
+        updateVisualization();
+        document.getElementById('pq-value').value = '';
+        document.getElementById('pq-priority').value = '';
+    });
+
+    // Extract Max
+    document.getElementById('pq-extract')?.addEventListener('click', () => {
+        if (!visualizationData.heap.length) {
+            DSLearningPlatform.showToast('Heap is empty', 'warning');
+            return;
+        }
+        const max = visualizationData.heap[0];
+        const last = visualizationData.heap.pop();
+        if (visualizationData.heap.length > 0) {
+            visualizationData.heap[0] = last;
+            heapifyDown(visualizationData.heap);
+        }
+        logOperation(`Extracted max: ${max.value} (priority ${max.priority})`);
+        updateVisualization();
+    });
+
+    // Peek Max
+    document.getElementById('pq-peek')?.addEventListener('click', () => {
+        if (!visualizationData.heap.length) {
+            DSLearningPlatform.showToast('Heap is empty', 'warning');
+            return;
+        }
+        const max = visualizationData.heap[0];
+        DSLearningPlatform.showToast(`Max: ${max.value} (priority ${max.priority})`, 'info');
+        logOperation(`Peeked max: ${max.value} (priority ${max.priority})`);
+    });
+
+    // Clear
+    document.getElementById('pq-clear')?.addEventListener('click', () => {
+        visualizationData.heap = [];
+        logOperation('Heap cleared');
+        updateVisualization();
+    });
+// End of setupPriorityQueueControls
+
+// Heapify helpers (max-heap)
+function heapifyUp(heap) {
+    let idx = heap.length - 1;
+    while (idx > 0) {
+        let parent = Math.floor((idx - 1) / 2);
+        if (heap[parent].priority < heap[idx].priority) {
+            [heap[parent], heap[idx]] = [heap[idx], heap[parent]];
+            idx = parent;
+        } else {
+            break;
+        }
+    }
+}
+function heapifyDown(heap) {
+    let idx = 0;
+    const n = heap.length;
+    while (true) {
+        let left = 2 * idx + 1;
+        let right = 2 * idx + 2;
+        let largest = idx;
+        if (left < n && heap[left].priority > heap[largest].priority) largest = left;
+        if (right < n && heap[right].priority > heap[largest].priority) largest = right;
+        if (largest !== idx) {
+            [heap[largest], heap[idx]] = [heap[idx], heap[largest]];
+            idx = largest;
+        } else {
+            break;
+        }
+    }
+}}
+
 /**
  * Set up doubly linked list controls
  */
@@ -882,7 +1061,6 @@ function setupDoublyLinkedListControls() {
         logOperation('Doubly linked list cleared');
         updateVisualization();
     });
-}
 }
 
 /**
