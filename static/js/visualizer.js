@@ -299,6 +299,13 @@ function getInitialData(dataStructure) {
             return { elements: [5, 2, 8, 1, 9], highlightedIndex: -1 };
         case 'linked_list':
             return { nodes: [{ value: 1, next: 1 }, { value: 2, next: 2 }, { value: 3, next: null }], highlightedIndex: -1 };
+        case 'doubly_linked_list':
+            // prev: index of previous node, next: index of next node
+            return { nodes: [
+                { value: 10, prev: null, next: 1 },
+                { value: 20, prev: 0, next: 2 },
+                { value: 30, prev: 1, next: null }
+            ], highlightedIndex: -1 };
         case 'stack':
             return { elements: [1, 2, 3], highlightedIndex: -1 };
         case 'queue':
@@ -306,15 +313,9 @@ function getInitialData(dataStructure) {
         case 'binary_tree':
             return { 
                 root: { 
-<<<<<<< HEAD
                     value: 50, 
                     left: { value: 30, left: null, right: null }, 
                     right: { value: 70, left: null, right: null } 
-=======
-                    value: 5, 
-                    left: { value: 3, left: null, right: null }, 
-                    right: { value: 7, left: null, right: null } 
->>>>>>> 4ca8c344fabe770c5deb0742962d187fff6e6ce9
                 } 
             };
         default:
@@ -327,13 +328,15 @@ function getInitialData(dataStructure) {
  */
 function renderVisualization(dataStructure, svg) {
     svg.selectAll('*').remove();
-    
     switch (dataStructure) {
         case 'array':
             renderArrayVisualization(svg);
             break;
         case 'linked_list':
             renderLinkedListVisualization(svg);
+            break;
+        case 'doubly_linked_list':
+            renderDoublyLinkedListVisualization(svg);
             break;
         case 'stack':
             renderStackVisualization(svg);
@@ -345,6 +348,97 @@ function renderVisualization(dataStructure, svg) {
             renderBinaryTreeVisualization(svg);
             break;
     }
+}
+/**
+ * Render doubly linked list visualization
+ */
+function renderDoublyLinkedListVisualization(svg) {
+    const data = visualizationData.nodes;
+    const nodeWidth = 80;
+    const nodeHeight = 50;
+    const nodeSpacing = 120;
+    const startX = 50;
+    const startY = 250;
+
+    // Create nodes
+    const nodes = svg.selectAll('.dll-node')
+        .data(data)
+        .enter()
+        .append('g')
+        .attr('class', 'dll-node-group');
+
+    // Node rectangles
+    nodes.append('rect')
+        .attr('class', 'node')
+        .attr('x', (d, i) => startX + i * nodeSpacing)
+        .attr('y', startY)
+        .attr('width', nodeWidth)
+        .attr('height', nodeHeight)
+        .attr('fill', '#fd7e14')
+        .attr('stroke', '#6c757d')
+        .attr('stroke-width', 2)
+        .attr('rx', 5);
+
+    // Node values
+    nodes.append('text')
+        .attr('class', 'node-text')
+        .attr('x', (d, i) => startX + i * nodeSpacing + nodeWidth / 2)
+        .attr('y', startY + nodeHeight / 2)
+        .text(d => d.value)
+        .attr('fill', 'white')
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central');
+
+    // Next arrows (right)
+    nodes.filter((d, i) => d.next !== null)
+        .append('line')
+        .attr('class', 'dll-link-next')
+        .attr('x1', (d, i) => startX + i * nodeSpacing + nodeWidth)
+        .attr('y1', startY + nodeHeight / 2 - 10)
+        .attr('x2', (d, i) => startX + d.next * nodeSpacing)
+        .attr('y2', startY + nodeHeight / 2 - 10)
+        .attr('stroke', '#0d6efd')
+        .attr('stroke-width', 2)
+        .attr('marker-end', 'url(#dll-arrowhead-next)');
+
+    // Prev arrows (left)
+    nodes.filter((d, i) => d.prev !== null)
+        .append('line')
+        .attr('class', 'dll-link-prev')
+        .attr('x1', (d, i) => startX + i * nodeSpacing)
+        .attr('y1', startY + nodeHeight / 2 + 10)
+        .attr('x2', (d, i) => startX + d.prev * nodeSpacing + nodeWidth)
+        .attr('y2', startY + nodeHeight / 2 + 10)
+        .attr('stroke', '#20c997')
+        .attr('stroke-width', 2)
+        .attr('marker-end', 'url(#dll-arrowhead-prev)');
+
+    // Add arrowhead markers for next and prev
+    svg.append('defs')
+        .append('marker')
+        .attr('id', 'dll-arrowhead-next')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 8)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#0d6efd');
+
+    svg.append('defs')
+        .append('marker')
+        .attr('id', 'dll-arrowhead-prev')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 2)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M10,-5L0,0L10,5')
+        .attr('fill', '#20c997');
 }
 
 /**
@@ -673,6 +767,9 @@ function setupDataStructureControls() {
         case 'linked_list':
             setupLinkedListControls();
             break;
+        case 'doubly_linked_list':
+            setupDoublyLinkedListControls();
+            break;
         case 'stack':
             setupStackControls();
             break;
@@ -683,6 +780,109 @@ function setupDataStructureControls() {
             setupBinaryTreeControls();
             break;
     }
+/**
+ * Set up doubly linked list controls
+ */
+function setupDoublyLinkedListControls() {
+    // Add Node
+    document.getElementById('dll-add')?.addEventListener('click', () => {
+        const value = parseInt(document.getElementById('dll-value').value);
+        const position = document.getElementById('dll-position').value;
+        if (isNaN(value)) {
+            DSLearningPlatform.showToast('Please enter a valid number', 'warning');
+            return;
+        }
+        let nodes = visualizationData.nodes;
+        if (position === 'start') {
+            // Insert at start
+            const newNode = { value, prev: null, next: nodes.length > 0 ? 0 : null };
+            if (nodes.length > 0) nodes[0].prev = 0;
+            nodes.unshift(newNode);
+            // Fix next/prev indices
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].next !== null && nodes[i].next !== i + 1) nodes[i].next = i + 1 < nodes.length ? i + 1 : null;
+                if (nodes[i].prev !== null && nodes[i].prev !== i - 1) nodes[i].prev = i - 1 >= 0 ? i - 1 : null;
+            }
+            logOperation(`Added ${value} at start of list`);
+        } else if (position === 'end') {
+            // Insert at end
+            const newNode = { value, prev: nodes.length - 1 >= 0 ? nodes.length - 1 : null, next: null };
+            if (nodes.length > 0) nodes[nodes.length - 1].next = nodes.length;
+            nodes.push(newNode);
+            logOperation(`Added ${value} at end of list`);
+        }
+        updateVisualization();
+        document.getElementById('dll-value').value = '';
+    });
+
+    // Remove Node
+    document.getElementById('dll-remove')?.addEventListener('click', () => {
+        const value = parseInt(document.getElementById('dll-remove-value').value);
+        if (isNaN(value)) {
+            DSLearningPlatform.showToast('Please enter a valid number', 'warning');
+            return;
+        }
+        let nodes = visualizationData.nodes;
+        const index = nodes.findIndex(node => node.value === value);
+        if (index === -1) {
+            DSLearningPlatform.showToast(`${value} not found in list`, 'warning');
+            return;
+        }
+        // Fix prev/next of neighbors
+        if (nodes[index].prev !== null) nodes[nodes[index].prev].next = nodes[index].next;
+        if (nodes[index].next !== null) nodes[nodes[index].next].prev = nodes[index].prev;
+        nodes.splice(index, 1);
+        // Fix indices after removal
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].next = i + 1 < nodes.length ? i + 1 : null;
+            nodes[i].prev = i - 1 >= 0 ? i - 1 : null;
+        }
+        logOperation(`Removed ${value} from list`);
+        updateVisualization();
+        document.getElementById('dll-remove-value').value = '';
+    });
+
+    // Traverse Forward
+    document.getElementById('dll-traverse-forward')?.addEventListener('click', () => {
+        let nodes = visualizationData.nodes;
+        if (nodes.length === 0) {
+            DSLearningPlatform.showToast('List is empty', 'warning');
+            return;
+        }
+        let values = [];
+        let i = 0;
+        while (i !== null) {
+            values.push(nodes[i].value);
+            i = nodes[i].next;
+        }
+        DSLearningPlatform.showToast('Forward: ' + values.join(' → '), 'info');
+        logOperation('Traversed forward: ' + values.join(' → '));
+    });
+
+    // Traverse Backward
+    document.getElementById('dll-traverse-backward')?.addEventListener('click', () => {
+        let nodes = visualizationData.nodes;
+        if (nodes.length === 0) {
+            DSLearningPlatform.showToast('List is empty', 'warning');
+            return;
+        }
+        let values = [];
+        let i = nodes.length - 1;
+        while (i !== null && i >= 0) {
+            values.push(nodes[i].value);
+            i = nodes[i].prev;
+        }
+        DSLearningPlatform.showToast('Backward: ' + values.join(' ← '), 'info');
+        logOperation('Traversed backward: ' + values.join(' ← '));
+    });
+
+    // Clear All
+    document.getElementById('dll-clear')?.addEventListener('click', () => {
+        visualizationData.nodes = [];
+        logOperation('Doubly linked list cleared');
+        updateVisualization();
+    });
+}
 }
 
 /**
