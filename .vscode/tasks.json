@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run VisuDSA (Docker)",
+      "type": "shell",
+      "command": "docker",
+      "args": ["compose", "up", "--build"],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop VisuDSA (Docker)",
+      "type": "shell",
+      "command": "docker",
+      "args": ["compose", "down"],
+      "group": "build"
+    }
+  ]
+}

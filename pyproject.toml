@@ -1,0 +1,17 @@
+[project]
+name = "visudsa"
+version = "1.0.0"
+description = "Interactive Data Structures Learning Platform - A comprehensive web application for learning data structures through theory, coding, visualization, and quizzes"
+requires-python = ">=3.11"
+dependencies = [
+    "email-validator>=2.2.0",
+    "flask>=3.1.1",
+    "flask-sqlalchemy>=3.1.1",
+    "gunicorn>=23.0.0",
+    "psycopg2-binary>=2.9.10",
+    "flask-login>=0.6.3",
+    "oauthlib>=3.3.1",
+    "pyjwt>=2.10.1",
+    "sqlalchemy>=2.0.41",
+    "werkzeug>=3.1.3",
+]

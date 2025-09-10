@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz - Interactive Data Structures Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Quiz Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Available Quizzes
+                    </h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for quiz_key in available_quizzes %}
+                    <a href="{{ url_for('quiz', quiz_id=quiz_key) }}" 
+                       class="list-group-item list-group-item-action {% if quiz_id == quiz_key %}active{% endif %}">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        {{ quiz_key.replace('_', ' ').title() }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Content -->
+        <div class="col-lg-9">
+            {% if quiz %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">{{ quiz.title }}</h4>
+                        <div class="badge bg-primary">{{ quiz.questions|length }} Questions</div>
+                    </div>
+                    <p class="mb-0 mt-2 text-muted">{{ quiz.description }}</p>
+                </div>
+                <div class="card-body">
+                    <form id="quiz-form">
+                        {% for question in quiz.questions %}
+                        <div class="question-container mb-4 pb-4 {% if not loop.last %}border-bottom{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h6 class="question-title">
+                                    Question {{ loop.index }}: {{ question.question }}
+                                </h6>
+                                <span class="badge bg-secondary">{{ question.points }} pts</span>
+                            </div>
+                            
+                            {% if question.type == 'multiple_choice' %}
+                            <div class="row">
+                                {% for option in question.options %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" 
+                                               name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_{{ loop.index0 }}"
+                                               value="{{ option.key }}">
+                                        <label class="form-check-label" for="q{{ question.id }}_{{ loop.index0 }}">
+                                            {{ option.key }}. {{ option.text }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {% elif question.type == 'code' %}
+                            <div class="mb-3">
+                                <label class="form-label">Code Solution:</label>
+                                <textarea class="form-control font-monospace" 
+                                          name="question_{{ question.id }}" 
+                                          rows="8" 
+                                          placeholder="Write your code here..."></textarea>
+                            </div>
+                            
+                            {% elif question.type == 'true_false' %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" 
+                                               name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_true"
+                                               value="true">
+                                        <label class="form-check-label" for="q{{ question.id }}_true">
+                                            True
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" 
+                                               name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_false"
+                                               value="false">
+                                        <label class="form-check-label" for="q{{ question.id }}_false">
+                                            False
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>
+                                Submit Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Section (Initially Hidden) -->
+            <div id="quiz-results" class="card mt-4" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Quiz Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="results-content">
+                        <!-- Results will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Quiz Selection Screen -->
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-question-circle fa-4x text-muted mb-4"></i>
+                    <h3>Interactive Quizzes</h3>
+                    <p class="lead text-muted mb-4">
+                        Test your knowledge with interactive quizzes on data structures.
+                    </p>
+                    <p>Each quiz includes:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Multiple choice questions</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Coding challenges</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Immediate feedback</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Detailed explanations</li>
+                    </ul>
+                    
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                {% for quiz_key in available_quizzes %}
+                                <div class="col-md-6">
+                                    <div class="card border-secondary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-clipboard-list fa-2x text-primary mb-2"></i>
+                                            <h6>{{ quiz_key.replace('_', ' ').title() }}</h6>
+                                            <a href="{{ url_for('quiz', quiz_id=quiz_key) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                Take Quiz
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if quiz_id %}
+    initializeQuiz('{{ quiz_id }}');
+    {% endif %}
+});
+</script>
+{% endblock %}
