@@ -306,9 +306,15 @@ function getInitialData(dataStructure) {
         case 'binary_tree':
             return { 
                 root: { 
+<<<<<<< HEAD
                     value: 50, 
                     left: { value: 30, left: null, right: null }, 
                     right: { value: 70, left: null, right: null } 
+=======
+                    value: 5, 
+                    left: { value: 3, left: null, right: null }, 
+                    right: { value: 7, left: null, right: null } 
+>>>>>>> 4ca8c344fabe770c5deb0742962d187fff6e6ce9
                 } 
             };
         default:
