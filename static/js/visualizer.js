@@ -400,24 +400,128 @@ function renderVisualization(dataStructure, svg) {
  * Render graph visualization for BFS/DFS
  */
 function renderGraphVisualization(svg) {
-    const nodes = visualizationData.nodes;
-    const edges = visualizationData.edges;
+    let nodes = visualizationData.nodes;
+    let edges = visualizationData.edges;
     const traversal = visualizationData.traversal;
     const highlighted = visualizationData.highlighted;
+    const traversedEdges = visualizationData.traversedEdges || [];
     const nodeRadius = 28;
+
+    // --- Tree layout if possible ---
+    // --- Forest/Tree layout for each component ---
+    function getComponents(nodes, edges) {
+        // Returns array of arrays of node ids (components)
+        const adj = {};
+        nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { adj[e.from].push(e.to); adj[e.to].push(e.from); });
+        const visited = {};
+        const components = [];
+        for (const n of nodes) {
+            if (visited[n.id]) continue;
+            const comp = [];
+            const stack = [n.id];
+            visited[n.id] = true;
+            while (stack.length) {
+                const u = stack.pop();
+                comp.push(u);
+                for (const v of adj[u]) {
+                    if (!visited[v]) { visited[v] = true; stack.push(v); }
+                }
+            }
+            components.push(comp);
+        }
+        return components;
+    }
+
+    function isTreeComponent(comp, edges) {
+        // For a component (array of node ids), check if it's a tree
+        const compEdges = edges.filter(e => comp.includes(e.from) && comp.includes(e.to));
+        // Tree: |E| = |V|-1, connected, no cycles, one root
+        if (comp.length === 0) return false;
+        if (compEdges.length !== comp.length - 1) return false;
+        // Check for single parent
+        const parent = {};
+        for (const e of compEdges) {
+            if (parent[e.to]) return false;
+            parent[e.to] = e.from;
+        }
+        // Find root (no incoming edge)
+        const inDegree = {};
+        comp.forEach(id => inDegree[id] = 0);
+        compEdges.forEach(e => inDegree[e.to]++);
+        const roots = comp.filter(id => inDegree[id] === 0);
+        if (roots.length !== 1) return false;
+        return true;
+    }
+
+    // Layout all components
+    const components = getComponents(nodes, edges);
+    const svgWidth = 800;
+    const svgHeight = 400;
+    const margin = 40;
+    const compWidth = (svgWidth - 2 * margin) / Math.max(components.length, 1);
+    components.forEach((comp, ci) => {
+        const compNodes = nodes.filter(n => comp.includes(n.id));
+        const compEdges = edges.filter(e => comp.includes(e.from) && comp.includes(e.to));
+        if (isTreeComponent(comp, edges)) {
+            // Tree layout for this component
+            // Find root
+            const inDegree = {};
+            comp.forEach(id => inDegree[id] = 0);
+            compEdges.forEach(e => inDegree[e.to]++);
+            const root = compNodes.find(n => inDegree[n.id] === 0);
+            // BFS to assign level
+            const levels = {};
+            const levelNodes = {};
+            let maxLevel = 0;
+            const queue = [{ id: root.id, level: 0 }];
+            while (queue.length) {
+                const { id, level } = queue.shift();
+                levels[id] = level;
+                if (!levelNodes[level]) levelNodes[level] = [];
+                levelNodes[level].push(id);
+                maxLevel = Math.max(maxLevel, level);
+                compEdges.filter(e => e.from === id).forEach(e => {
+                    queue.push({ id: e.to, level: level + 1 });
+                });
+            }
+            // Assign x/y within compWidth
+            for (let l = 0; l <= maxLevel; l++) {
+                const ids = levelNodes[l];
+                ids.forEach((id, i) => {
+                    const node = nodes.find(n => n.id === id);
+                    node.x = margin + ci * compWidth + compWidth / (ids.length + 1) * (i + 1);
+                    node.y = 80 + l * (svgHeight - 120) / (maxLevel + 1);
+                });
+            }
+        } else {
+            // Arrange in a circle within compWidth
+            const centerX = margin + ci * compWidth + compWidth / 2;
+            const centerY = svgHeight / 2;
+            const radius = Math.min(compWidth, svgHeight) / 2.5;
+            compNodes.forEach((node, i) => {
+                const angle = (2 * Math.PI * i) / compNodes.length;
+                node.x = centerX + radius * Math.cos(angle);
+                node.y = centerY + radius * Math.sin(angle);
+            });
+        }
+    });
 
     // Draw edges
     edges.forEach((edge, i) => {
         const from = nodes.find(n => n.id === edge.from);
         const to = nodes.find(n => n.id === edge.to);
         if (!from || !to) return;
+        let color = '#6c757d';
+        if (traversedEdges.includes(i)) color = '#ffc107';
+        else if (highlighted.edge === i) color = '#ffc107';
         svg.append('line')
             .attr('x1', from.x)
             .attr('y1', from.y)
             .attr('x2', to.x)
             .attr('y2', to.y)
-            .attr('stroke', highlighted.edge === i ? '#ffc107' : '#6c757d')
-            .attr('stroke-width', 3);
+            .attr('stroke', color)
+            .attr('stroke-width', 4);
     });
 
     // Draw nodes
@@ -1067,7 +1171,7 @@ function setupGraphControls() {
         document.getElementById('graph-to').value = '';
     });
 
-    // DFS with animation
+    // DFS with animation and edge highlight
     document.getElementById('graph-dfs')?.addEventListener('click', async () => {
         const start = document.getElementById('graph-start').value.trim();
         if (!start) {
@@ -1079,22 +1183,32 @@ function setupGraphControls() {
             return;
         }
         const visited = [];
+        const traversedEdges = [];
         async function dfs(nodeId) {
             if (visited.includes(nodeId)) return;
             visited.push(nodeId);
             visualizationData.traversal = [...visited];
+            visualizationData.traversedEdges = [...traversedEdges];
             updateVisualization();
             await new Promise(res => setTimeout(res, 600));
-            for (const e of visualizationData.edges.filter(e => e.from === nodeId)) {
-                await dfs(e.to);
+            for (const [ei, e] of visualizationData.edges.map((e, i) => [i, e])) {
+                if (e.from === nodeId && !visited.includes(e.to)) {
+                    traversedEdges.push(ei);
+                    visualizationData.traversedEdges = [...traversedEdges];
+                    updateVisualization();
+                    await new Promise(res => setTimeout(res, 600));
+                    await dfs(e.to);
+                }
             }
         }
         await dfs(start);
         logOperation(`DFS: ${visited.join(' → ')}`);
         DSLearningPlatform.showToast(`DFS: ${visited.join(' → ')}`, 'info');
+        visualizationData.traversedEdges = [];
+        updateVisualization();
     });
 
-    // BFS with animation
+    // BFS with animation and edge highlight
     document.getElementById('graph-bfs')?.addEventListener('click', async () => {
         const start = document.getElementById('graph-start').value.trim();
         if (!start) {
@@ -1106,21 +1220,31 @@ function setupGraphControls() {
             return;
         }
         const visited = [];
+        const traversedEdges = [];
         const queue = [start];
         while (queue.length) {
             const nodeId = queue.shift();
             if (!visited.includes(nodeId)) {
                 visited.push(nodeId);
                 visualizationData.traversal = [...visited];
+                visualizationData.traversedEdges = [...traversedEdges];
                 updateVisualization();
                 await new Promise(res => setTimeout(res, 600));
-                visualizationData.edges.filter(e => e.from === nodeId).forEach(e => {
-                    if (!visited.includes(e.to) && !queue.includes(e.to)) queue.push(e.to);
-                });
+                for (const [ei, e] of visualizationData.edges.map((e, i) => [i, e])) {
+                    if (e.from === nodeId && !visited.includes(e.to) && !queue.includes(e.to)) {
+                        traversedEdges.push(ei);
+                        visualizationData.traversedEdges = [...traversedEdges];
+                        updateVisualization();
+                        await new Promise(res => setTimeout(res, 600));
+                        queue.push(e.to);
+                    }
+                }
             }
         }
         logOperation(`BFS: ${visited.join(' → ')}`);
         DSLearningPlatform.showToast(`BFS: ${visited.join(' → ')}`, 'info');
+        visualizationData.traversedEdges = [];
+        updateVisualization();
     });
 
     // Clear
