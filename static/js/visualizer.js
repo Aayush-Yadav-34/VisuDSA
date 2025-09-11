@@ -287,11 +287,19 @@ function createVisualization(dataStructure) {
     visualizationData = getInitialData(dataStructure);
     
     // Create SVG
+    let svgHeight = 400;
+    let svgWidth = 1000;
+    let svgViewBox = '0 0 800 400';
+    if (dataStructure === 'hash_table') {
+        svgHeight = 220; // Height for horizontal layout
+        svgWidth = 1000;
+        svgViewBox = '0 0 1000 220';
+    }
     const svg = d3.select('#visualization-container')
         .append('svg')
         .attr('width', '100%')
-        .attr('height', 400)
-        .attr('viewBox', '0 0 800 400');
+        .attr('height', svgHeight)
+        .attr('viewBox', svgViewBox);
     
     // Render initial visualization
     renderVisualization(dataStructure, svg);
@@ -333,6 +341,12 @@ function getInitialData(dataStructure) {
                     right: { value: 70, left: null, right: null } 
                 } 
             };
+        case 'hash_table':
+            // Simple hash table with 10 buckets
+            return {
+                buckets: Array.from({ length: 10 }, () => []),
+                highlighted: { bucket: -1, key: null }
+            };
         default:
             return {};
     }
@@ -365,8 +379,66 @@ function renderVisualization(dataStructure, svg) {
         case 'binary_tree':
             renderBinaryTreeVisualization(svg);
             break;
+        case 'hash_table':
+            renderHashTableVisualization(svg);
+            break;
     }
 }
+
+/**
+ * Render hash table visualization
+ */
+function renderHashTableVisualization(svg) {
+    const buckets = visualizationData.buckets;
+    const highlighted = visualizationData.highlighted;
+    const bucketWidth = 80;
+    const bucketHeight = 50;
+    const startX = 60;
+    const startY = 40;
+    const bucketSpacing = 30;
+
+    // Draw buckets horizontally
+    for (let i = 0; i < buckets.length; i++) {
+        // Bucket rectangle
+        svg.append('rect')
+            .attr('x', startX + i * (bucketWidth + bucketSpacing))
+            .attr('y', startY)
+            .attr('width', bucketWidth)
+            .attr('height', bucketHeight)
+            .attr('fill', highlighted.bucket === i ? '#ffc107' : '#0d6efd')
+            .attr('stroke', '#6c757d')
+            .attr('stroke-width', 2);
+
+        // Bucket index (above bucket)
+        svg.append('text')
+            .attr('x', startX + i * (bucketWidth + bucketSpacing) + bucketWidth / 2)
+            .attr('y', startY - 10)
+            .text(i)
+            .attr('fill', '#6c757d')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 18);
+
+        // Key-value pairs in bucket (drawn below the bucket, horizontally)
+        buckets[i].forEach((pair, j) => {
+            svg.append('rect')
+                .attr('x', startX + i * (bucketWidth + bucketSpacing) + 5)
+                .attr('y', startY + bucketHeight + 15 + j * 38)
+                .attr('width', bucketWidth - 10)
+                .attr('height', 30)
+                .attr('fill', highlighted.key === pair.key && highlighted.bucket === i ? '#dc3545' : '#20c997')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 1.5);
+            svg.append('text')
+                .attr('x', startX + i * (bucketWidth + bucketSpacing) + bucketWidth / 2)
+                .attr('y', startY + bucketHeight + 15 + j * 38 + 18)
+                .text(`${pair.key}:${pair.value}`)
+                .attr('fill', 'white')
+                .attr('text-anchor', 'middle')
+                .attr('font-size', 13);
+        });
+    }
+}
+
 /**
  * Render priority queue (heap) visualization
  */
@@ -878,7 +950,106 @@ function setupDataStructureControls() {
         case 'binary_tree':
             setupBinaryTreeControls();
             break;
+        case 'hash_table':
+            setupHashTableControls();
+            break;
     }
+
+}
+
+/**
+ * Set up hash table controls
+ */
+function setupHashTableControls() {
+    // Insert
+    document.getElementById('ht-insert')?.addEventListener('click', () => {
+        const key = document.getElementById('ht-key').value;
+        const value = document.getElementById('ht-value').value;
+        if (!key) {
+            DSLearningPlatform.showToast('Please enter a key', 'warning');
+            return;
+        }
+        const bucket = hashFunction(key);
+        // Check if key exists, update if so
+        let found = false;
+        for (let pair of visualizationData.buckets[bucket]) {
+            if (pair.key === key) {
+                pair.value = value;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            visualizationData.buckets[bucket].push({ key, value });
+            logOperation(`Inserted key: ${key}, value: ${value} in bucket ${bucket}`);
+        } else {
+            logOperation(`Updated key: ${key} with value: ${value} in bucket ${bucket}`);
+        }
+        visualizationData.highlighted = { bucket, key };
+        updateVisualization();
+        document.getElementById('ht-key').value = '';
+        document.getElementById('ht-value').value = '';
+    });
+
+    // Search
+    document.getElementById('ht-search')?.addEventListener('click', () => {
+        const key = document.getElementById('ht-search-key').value;
+        if (!key) {
+            DSLearningPlatform.showToast('Please enter a key', 'warning');
+            return;
+        }
+        const bucket = hashFunction(key);
+        const found = visualizationData.buckets[bucket].find(pair => pair.key === key);
+        visualizationData.highlighted = { bucket, key };
+        if (found) {
+            DSLearningPlatform.showToast(`Found key: ${key}, value: ${found.value} in bucket ${bucket}`, 'success');
+            logOperation(`Searched key: ${key}, found value: ${found.value} in bucket ${bucket}`);
+        } else {
+            DSLearningPlatform.showToast(`Key: ${key} not found`, 'info');
+            logOperation(`Searched key: ${key}, not found`);
+        }
+        updateVisualization();
+        document.getElementById('ht-search-key').value = '';
+    });
+
+    // Delete
+    document.getElementById('ht-delete')?.addEventListener('click', () => {
+        const key = document.getElementById('ht-search-key').value;
+        if (!key) {
+            DSLearningPlatform.showToast('Please enter a key', 'warning');
+            return;
+        }
+        const bucket = hashFunction(key);
+        const idx = visualizationData.buckets[bucket].findIndex(pair => pair.key === key);
+        if (idx !== -1) {
+            visualizationData.buckets[bucket].splice(idx, 1);
+            DSLearningPlatform.showToast(`Deleted key: ${key} from bucket ${bucket}`, 'success');
+            logOperation(`Deleted key: ${key} from bucket ${bucket}`);
+        } else {
+            DSLearningPlatform.showToast(`Key: ${key} not found`, 'info');
+            logOperation(`Tried to delete key: ${key}, not found`);
+        }
+        visualizationData.highlighted = { bucket, key };
+        updateVisualization();
+        document.getElementById('ht-search-key').value = '';
+    });
+
+    // Clear
+    document.getElementById('ht-clear')?.addEventListener('click', () => {
+        visualizationData.buckets = Array.from({ length: 10 }, () => []);
+        visualizationData.highlighted = { bucket: -1, key: null };
+        logOperation('Hash table cleared');
+        updateVisualization();
+    });
+}
+
+// Simple hash function for demo (sum char codes mod 10)
+function hashFunction(key) {
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+        hash += key.charCodeAt(i);
+    }
+    return hash % 10;
 }
 /**
  * Set up priority queue (heap) controls
