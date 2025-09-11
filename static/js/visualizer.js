@@ -372,78 +372,78 @@ function renderVisualization(dataStructure, svg) {
  */
 function renderPriorityQueueVisualization(svg) {
     const heap = visualizationData.heap;
-    if (!heap) return;
-    const cellWidth = 70;
-    const cellHeight = 60;
-    const startX = 200;
-    const startY = 150;
-    if (heap.length === 0) {
-        svg.append('rect')
-            .attr('x', startX)
-            .attr('y', startY)
-            .attr('width', cellWidth)
-            .attr('height', cellHeight)
-            .attr('fill', '#dee2e6')
-            .attr('stroke', '#6c757d')
-            .attr('stroke-width', 2)
-            .attr('rx', 8);
-        svg.append('text')
-            .attr('x', startX + cellWidth / 2)
-            .attr('y', startY + cellHeight / 2)
-            .text('Empty')
-            .attr('fill', '#6c757d')
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
-            .attr('font-size', 16)
-            .attr('font-weight', 'bold');
-        return;
+    if (!heap || heap.length === 0) return;
+    const nodeRadius = 28;
+    const levelHeight = 90;
+    const rootX = 400;
+    const rootY = 60;
+
+    // Calculate positions for each node in the heap
+    function getNodePosition(index) {
+        if (index === 0) return { x: rootX, y: rootY };
+        const level = Math.floor(Math.log2(index + 1));
+        const nodesInLevel = Math.pow(2, level);
+        const posInLevel = index - (nodesInLevel - 1);
+        const width = 800 / (nodesInLevel + 1);
+        return {
+            x: width * (posInLevel + 1),
+            y: rootY + level * levelHeight
+        };
     }
-    // Draw heap as horizontal container
-    const groups = svg.selectAll('.pq-cell')
-        .data(heap)
-        .enter()
-        .append('g')
-        .attr('class', 'pq-cell-group');
 
-    groups.append('rect')
-        .attr('class', (d, i) => 'pq-cell' + (i === 0 ? ' pq-max' : ''))
-        .attr('x', (d, i) => startX + i * (cellWidth + 10))
-        .attr('y', startY)
-        .attr('width', cellWidth)
-        .attr('height', cellHeight)
-        .attr('fill', (d, i) => i === 0 ? '#ffc107' : '#0dcaf0')
-        .attr('stroke', '#6c757d')
-        .attr('stroke-width', 2)
-        .attr('rx', 8);
+    // Draw edges
+    heap.forEach((node, i) => {
+        const left = 2 * i + 1;
+        const right = 2 * i + 2;
+        const pos = getNodePosition(i);
+        if (left < heap.length) {
+            const leftPos = getNodePosition(left);
+            svg.append('line')
+                .attr('x1', pos.x)
+                .attr('y1', pos.y + nodeRadius)
+                .attr('x2', leftPos.x)
+                .attr('y2', leftPos.y - nodeRadius)
+                .attr('stroke', '#6c757d')
+                .attr('stroke-width', 2);
+        }
+        if (right < heap.length) {
+            const rightPos = getNodePosition(right);
+            svg.append('line')
+                .attr('x1', pos.x)
+                .attr('y1', pos.y + nodeRadius)
+                .attr('x2', rightPos.x)
+                .attr('y2', rightPos.y - nodeRadius)
+                .attr('stroke', '#6c757d')
+                .attr('stroke-width', 2);
+        }
+    });
 
-    // Value
-    groups.append('text')
-        .attr('x', (d, i) => startX + i * (cellWidth + 10) + cellWidth / 2)
-        .attr('y', startY + cellHeight / 2 - 8)
-        .text(d => d.value)
-        .attr('fill', 'white')
-        .attr('text-anchor', 'middle')
-        .attr('font-size', 20)
-        .attr('font-weight', 'bold');
-
-    // Priority
-    groups.append('text')
-        .attr('x', (d, i) => startX + i * (cellWidth + 10) + cellWidth / 2)
-        .attr('y', startY + cellHeight / 2 + 16)
-        .text(d => 'P:' + d.priority)
-        .attr('fill', '#212529')
-        .attr('text-anchor', 'middle')
-        .attr('font-size', 13);
-
-    // Max label
-    svg.append('text')
-        .attr('x', startX + cellWidth / 2)
-        .attr('y', startY - 12)
-        .text('MAX')
-        .attr('fill', '#ffc107')
-        .attr('text-anchor', 'middle')
-        .attr('font-weight', 'bold')
-        .attr('font-size', 15);
+    // Draw nodes
+    heap.forEach((node, i) => {
+        const pos = getNodePosition(i);
+        svg.append('circle')
+            .attr('cx', pos.x)
+            .attr('cy', pos.y)
+            .attr('r', nodeRadius)
+            .attr('fill', '#0dcaf0')
+            .attr('stroke', '#6c757d')
+            .attr('stroke-width', 2);
+        svg.append('text')
+            .attr('x', pos.x)
+            .attr('y', pos.y - 6)
+            .text(node.value)
+            .attr('fill', 'white')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 18)
+            .attr('font-weight', 'bold');
+        svg.append('text')
+            .attr('x', pos.x)
+            .attr('y', pos.y + 18)
+            .text('P:' + node.priority)
+            .attr('fill', '#ffc107')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 12);
+    });
 }
 /**
  * Render doubly linked list visualization
