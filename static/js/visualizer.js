@@ -164,18 +164,25 @@ function setupControls(dataStructure) {
         `,
         'priority_queue': `
             <div class="mb-3">
-                <label class="form-label">Insert Element</label>
+                <label class="form-label">Enqueue Element</label>
                 <div class="input-group">
                     <input type="number" class="form-control" id="pq-value" placeholder="Value">
                     <input type="number" class="form-control" id="pq-priority" placeholder="Priority">
-                    <button class="btn btn-primary" id="pq-insert">Insert</button>
+                    <button class="btn btn-primary" id="pq-enqueue">Enqueue</button>
                 </div>
             </div>
             <div class="mb-3">
-                <button class="btn btn-warning w-100" id="pq-extract">Extract Max</button>
+                <button class="btn btn-warning w-100" id="pq-dequeue">Dequeue</button>
             </div>
             <div class="mb-3">
-                <button class="btn btn-info w-100" id="pq-peek">Peek Max</button>
+                <div class="row">
+                    <div class="col-6">
+                        <button class="btn btn-info w-100" id="pq-front">Front</button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-info w-100" id="pq-rear">Rear</button>
+                    </div>
+                </div>
             </div>
             <div class="d-grid gap-2">
                 <button class="btn btn-outline-danger" id="pq-clear">Clear All</button>
@@ -365,78 +372,78 @@ function renderVisualization(dataStructure, svg) {
  */
 function renderPriorityQueueVisualization(svg) {
     const heap = visualizationData.heap;
-    if (!heap || heap.length === 0) return;
-    const nodeRadius = 28;
-    const levelHeight = 90;
-    const rootX = 400;
-    const rootY = 60;
-
-    // Calculate positions for each node in the heap
-    function getNodePosition(index) {
-        if (index === 0) return { x: rootX, y: rootY };
-        const level = Math.floor(Math.log2(index + 1));
-        const nodesInLevel = Math.pow(2, level);
-        const posInLevel = index - (nodesInLevel - 1);
-        const width = 800 / (nodesInLevel + 1);
-        return {
-            x: width * (posInLevel + 1),
-            y: rootY + level * levelHeight
-        };
-    }
-
-    // Draw edges
-    heap.forEach((node, i) => {
-        const left = 2 * i + 1;
-        const right = 2 * i + 2;
-        const pos = getNodePosition(i);
-        if (left < heap.length) {
-            const leftPos = getNodePosition(left);
-            svg.append('line')
-                .attr('x1', pos.x)
-                .attr('y1', pos.y + nodeRadius)
-                .attr('x2', leftPos.x)
-                .attr('y2', leftPos.y - nodeRadius)
-                .attr('stroke', '#6c757d')
-                .attr('stroke-width', 2);
-        }
-        if (right < heap.length) {
-            const rightPos = getNodePosition(right);
-            svg.append('line')
-                .attr('x1', pos.x)
-                .attr('y1', pos.y + nodeRadius)
-                .attr('x2', rightPos.x)
-                .attr('y2', rightPos.y - nodeRadius)
-                .attr('stroke', '#6c757d')
-                .attr('stroke-width', 2);
-        }
-    });
-
-    // Draw nodes
-    heap.forEach((node, i) => {
-        const pos = getNodePosition(i);
-        svg.append('circle')
-            .attr('cx', pos.x)
-            .attr('cy', pos.y)
-            .attr('r', nodeRadius)
-            .attr('fill', '#0dcaf0')
+    if (!heap) return;
+    const cellWidth = 70;
+    const cellHeight = 60;
+    const startX = 200;
+    const startY = 150;
+    if (heap.length === 0) {
+        svg.append('rect')
+            .attr('x', startX)
+            .attr('y', startY)
+            .attr('width', cellWidth)
+            .attr('height', cellHeight)
+            .attr('fill', '#dee2e6')
             .attr('stroke', '#6c757d')
-            .attr('stroke-width', 2);
+            .attr('stroke-width', 2)
+            .attr('rx', 8);
         svg.append('text')
-            .attr('x', pos.x)
-            .attr('y', pos.y - 6)
-            .text(node.value)
-            .attr('fill', 'white')
+            .attr('x', startX + cellWidth / 2)
+            .attr('y', startY + cellHeight / 2)
+            .text('Empty')
+            .attr('fill', '#6c757d')
             .attr('text-anchor', 'middle')
-            .attr('font-size', 18)
+            .attr('dominant-baseline', 'central')
+            .attr('font-size', 16)
             .attr('font-weight', 'bold');
-        svg.append('text')
-            .attr('x', pos.x)
-            .attr('y', pos.y + 18)
-            .text('P:' + node.priority)
-            .attr('fill', '#ffc107')
-            .attr('text-anchor', 'middle')
-            .attr('font-size', 12);
-    });
+        return;
+    }
+    // Draw heap as horizontal container
+    const groups = svg.selectAll('.pq-cell')
+        .data(heap)
+        .enter()
+        .append('g')
+        .attr('class', 'pq-cell-group');
+
+    groups.append('rect')
+        .attr('class', (d, i) => 'pq-cell' + (i === 0 ? ' pq-max' : ''))
+        .attr('x', (d, i) => startX + i * (cellWidth + 10))
+        .attr('y', startY)
+        .attr('width', cellWidth)
+        .attr('height', cellHeight)
+        .attr('fill', (d, i) => i === 0 ? '#ffc107' : '#0dcaf0')
+        .attr('stroke', '#6c757d')
+        .attr('stroke-width', 2)
+        .attr('rx', 8);
+
+    // Value
+    groups.append('text')
+        .attr('x', (d, i) => startX + i * (cellWidth + 10) + cellWidth / 2)
+        .attr('y', startY + cellHeight / 2 - 8)
+        .text(d => d.value)
+        .attr('fill', 'white')
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 20)
+        .attr('font-weight', 'bold');
+
+    // Priority
+    groups.append('text')
+        .attr('x', (d, i) => startX + i * (cellWidth + 10) + cellWidth / 2)
+        .attr('y', startY + cellHeight / 2 + 16)
+        .text(d => 'P:' + d.priority)
+        .attr('fill', '#212529')
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 13);
+
+    // Max label
+    svg.append('text')
+        .attr('x', startX + cellWidth / 2)
+        .attr('y', startY - 12)
+        .text('MAX')
+        .attr('fill', '#ffc107')
+        .attr('text-anchor', 'middle')
+        .attr('font-weight', 'bold')
+        .attr('font-size', 15);
 }
 /**
  * Render doubly linked list visualization
@@ -877,8 +884,8 @@ function setupDataStructureControls() {
  * Set up priority queue (heap) controls
  */
 function setupPriorityQueueControls() {
-    // Insert
-    document.getElementById('pq-insert')?.addEventListener('click', () => {
+    // Enqueue
+    document.getElementById('pq-enqueue')?.addEventListener('click', () => {
         const value = parseInt(document.getElementById('pq-value').value);
         const priority = parseInt(document.getElementById('pq-priority').value);
         if (isNaN(value) || isNaN(priority)) {
@@ -887,16 +894,16 @@ function setupPriorityQueueControls() {
         }
         visualizationData.heap.push({ value, priority });
         heapifyUp(visualizationData.heap);
-        logOperation(`Inserted ${value} with priority ${priority}`);
+        logOperation(`Enqueued ${value} with priority ${priority}`);
         updateVisualization();
         document.getElementById('pq-value').value = '';
         document.getElementById('pq-priority').value = '';
     });
 
-    // Extract Max
-    document.getElementById('pq-extract')?.addEventListener('click', () => {
+    // Dequeue (Extract Max)
+    document.getElementById('pq-dequeue')?.addEventListener('click', () => {
         if (!visualizationData.heap.length) {
-            DSLearningPlatform.showToast('Heap is empty', 'warning');
+            DSLearningPlatform.showToast('Priority Queue is empty', 'warning');
             return;
         }
         const max = visualizationData.heap[0];
@@ -905,25 +912,41 @@ function setupPriorityQueueControls() {
             visualizationData.heap[0] = last;
             heapifyDown(visualizationData.heap);
         }
-        logOperation(`Extracted max: ${max.value} (priority ${max.priority})`);
+        logOperation(`Dequeued max: ${max.value} (priority ${max.priority})`);
         updateVisualization();
     });
 
-    // Peek Max
-    document.getElementById('pq-peek')?.addEventListener('click', () => {
+    // Front (Max)
+    document.getElementById('pq-front')?.addEventListener('click', () => {
         if (!visualizationData.heap.length) {
-            DSLearningPlatform.showToast('Heap is empty', 'warning');
+            DSLearningPlatform.showToast('Priority Queue is empty', 'warning');
             return;
         }
         const max = visualizationData.heap[0];
-        DSLearningPlatform.showToast(`Max: ${max.value} (priority ${max.priority})`, 'info');
-        logOperation(`Peeked max: ${max.value} (priority ${max.priority})`);
+        DSLearningPlatform.showToast(`Front (Max): ${max.value} (priority ${max.priority})`, 'info');
+        logOperation(`Front (Max): ${max.value} (priority ${max.priority})`);
+    });
+
+    // Rear (Min)
+    document.getElementById('pq-rear')?.addEventListener('click', () => {
+        if (!visualizationData.heap.length) {
+            DSLearningPlatform.showToast('Priority Queue is empty', 'warning');
+            return;
+        }
+        // Find min priority element (last in heap for max-heap)
+        let minIdx = 0;
+        for (let i = 1; i < visualizationData.heap.length; i++) {
+            if (visualizationData.heap[i].priority < visualizationData.heap[minIdx].priority) minIdx = i;
+        }
+        const min = visualizationData.heap[minIdx];
+        DSLearningPlatform.showToast(`Rear (Min): ${min.value} (priority ${min.priority})`, 'info');
+        logOperation(`Rear (Min): ${min.value} (priority ${min.priority})`);
     });
 
     // Clear
     document.getElementById('pq-clear')?.addEventListener('click', () => {
         visualizationData.heap = [];
-        logOperation('Heap cleared');
+        logOperation('Priority Queue cleared');
         updateVisualization();
     });
 // End of setupPriorityQueueControls
