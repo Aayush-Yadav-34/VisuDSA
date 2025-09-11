@@ -310,6 +310,14 @@ function createVisualization(dataStructure) {
  */
 function getInitialData(dataStructure) {
     switch (dataStructure) {
+        case 'dfs_bfs':
+            // Graph: nodes as array of {id, x, y}, edges as array of {from, to}
+            return {
+                nodes: [],
+                edges: [],
+                traversal: [],
+                highlighted: { node: null, edge: null }
+            };
         case 'array':
             return { elements: [5, 2, 8, 1, 9], highlightedIndex: -1 };
         case 'linked_list':
@@ -382,7 +390,54 @@ function renderVisualization(dataStructure, svg) {
         case 'hash_table':
             renderHashTableVisualization(svg);
             break;
+        case 'dfs_bfs':
+            renderGraphVisualization(svg);
+            break;
     }
+}
+
+/**
+ * Render graph visualization for BFS/DFS
+ */
+function renderGraphVisualization(svg) {
+    const nodes = visualizationData.nodes;
+    const edges = visualizationData.edges;
+    const traversal = visualizationData.traversal;
+    const highlighted = visualizationData.highlighted;
+    const nodeRadius = 28;
+
+    // Draw edges
+    edges.forEach((edge, i) => {
+        const from = nodes.find(n => n.id === edge.from);
+        const to = nodes.find(n => n.id === edge.to);
+        if (!from || !to) return;
+        svg.append('line')
+            .attr('x1', from.x)
+            .attr('y1', from.y)
+            .attr('x2', to.x)
+            .attr('y2', to.y)
+            .attr('stroke', highlighted.edge === i ? '#ffc107' : '#6c757d')
+            .attr('stroke-width', 3);
+    });
+
+    // Draw nodes
+    nodes.forEach((node, i) => {
+        svg.append('circle')
+            .attr('cx', node.x)
+            .attr('cy', node.y)
+            .attr('r', nodeRadius)
+            .attr('fill', traversal.includes(node.id) ? '#20c997' : (highlighted.node === node.id ? '#ffc107' : '#0d6efd'))
+            .attr('stroke', '#6c757d')
+            .attr('stroke-width', 2);
+        svg.append('text')
+            .attr('x', node.x)
+            .attr('y', node.y)
+            .text(node.id)
+            .attr('fill', 'white')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('font-size', 18);
+    });
 }
 
 /**
@@ -953,8 +1008,130 @@ function setupDataStructureControls() {
         case 'hash_table':
             setupHashTableControls();
             break;
+        case 'dfs_bfs':
+            setupGraphControls();
+            break;
     }
+}
 
+/**
+ * Set up graph controls for BFS/DFS
+ */
+function setupGraphControls() {
+    // Add Node
+    document.getElementById('graph-add-node')?.addEventListener('click', () => {
+        const nodeName = document.getElementById('graph-node').value.trim();
+        if (!nodeName) {
+            DSLearningPlatform.showToast('Please enter a node name', 'warning');
+            return;
+        }
+        if (visualizationData.nodes.some(n => n.id === nodeName)) {
+            DSLearningPlatform.showToast('Node already exists', 'warning');
+            return;
+        }
+        // Place all nodes in a circle layout (recalculate all positions)
+        const centerX = 400, centerY = 180, radius = 120;
+        const nodes = [...visualizationData.nodes, { id: nodeName }];
+        const total = nodes.length;
+        nodes.forEach((node, i) => {
+            const angle = (2 * Math.PI * i) / total;
+            node.x = centerX + radius * Math.cos(angle);
+            node.y = centerY + radius * Math.sin(angle);
+        });
+        visualizationData.nodes = nodes;
+        logOperation(`Added node: ${nodeName}`);
+        updateVisualization();
+        document.getElementById('graph-node').value = '';
+    });
+
+    // Add Edge
+    document.getElementById('graph-add-edge')?.addEventListener('click', () => {
+        const from = document.getElementById('graph-from').value.trim();
+        const to = document.getElementById('graph-to').value.trim();
+        if (!from || !to) {
+            DSLearningPlatform.showToast('Enter both node names', 'warning');
+            return;
+        }
+        if (!visualizationData.nodes.some(n => n.id === from) || !visualizationData.nodes.some(n => n.id === to)) {
+            DSLearningPlatform.showToast('Both nodes must exist', 'warning');
+            return;
+        }
+        if (visualizationData.edges.some(e => e.from === from && e.to === to)) {
+            DSLearningPlatform.showToast('Edge already exists', 'warning');
+            return;
+        }
+        visualizationData.edges.push({ from, to });
+        logOperation(`Added edge: ${from} → ${to}`);
+        updateVisualization();
+        document.getElementById('graph-from').value = '';
+        document.getElementById('graph-to').value = '';
+    });
+
+    // DFS with animation
+    document.getElementById('graph-dfs')?.addEventListener('click', async () => {
+        const start = document.getElementById('graph-start').value.trim();
+        if (!start) {
+            DSLearningPlatform.showToast('Enter start node', 'warning');
+            return;
+        }
+        if (!visualizationData.nodes.some(n => n.id === start)) {
+            DSLearningPlatform.showToast('Start node does not exist', 'warning');
+            return;
+        }
+        const visited = [];
+        async function dfs(nodeId) {
+            if (visited.includes(nodeId)) return;
+            visited.push(nodeId);
+            visualizationData.traversal = [...visited];
+            updateVisualization();
+            await new Promise(res => setTimeout(res, 600));
+            for (const e of visualizationData.edges.filter(e => e.from === nodeId)) {
+                await dfs(e.to);
+            }
+        }
+        await dfs(start);
+        logOperation(`DFS: ${visited.join(' → ')}`);
+        DSLearningPlatform.showToast(`DFS: ${visited.join(' → ')}`, 'info');
+    });
+
+    // BFS with animation
+    document.getElementById('graph-bfs')?.addEventListener('click', async () => {
+        const start = document.getElementById('graph-start').value.trim();
+        if (!start) {
+            DSLearningPlatform.showToast('Enter start node', 'warning');
+            return;
+        }
+        if (!visualizationData.nodes.some(n => n.id === start)) {
+            DSLearningPlatform.showToast('Start node does not exist', 'warning');
+            return;
+        }
+        const visited = [];
+        const queue = [start];
+        while (queue.length) {
+            const nodeId = queue.shift();
+            if (!visited.includes(nodeId)) {
+                visited.push(nodeId);
+                visualizationData.traversal = [...visited];
+                updateVisualization();
+                await new Promise(res => setTimeout(res, 600));
+                visualizationData.edges.filter(e => e.from === nodeId).forEach(e => {
+                    if (!visited.includes(e.to) && !queue.includes(e.to)) queue.push(e.to);
+                });
+            }
+        }
+        logOperation(`BFS: ${visited.join(' → ')}`);
+        DSLearningPlatform.showToast(`BFS: ${visited.join(' → ')}`, 'info');
+    });
+
+    // Clear
+    document.getElementById('graph-clear')?.addEventListener('click', () => {
+        visualizationData.nodes = [];
+        visualizationData.edges = [];
+        visualizationData.traversal = [];
+        visualizationData.highlighted = { node: null, edge: null };
+        logOperation('Graph cleared');
+        updateVisualization();
+    });
 }
 
 /**
