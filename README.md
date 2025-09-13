@@ -77,6 +77,7 @@ A comprehensive Flask-based web application for learning data structures through
 
 5. **Access the platform**:
    Open your browser and navigate to: `http://localhost:5000`
+   **Or view the live deployment at: [https://visudsa.onrender.com](https://visudsa.onrender.com)**
 
 ## Default Admin Account
 
