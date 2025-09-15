@@ -22,9 +22,33 @@ A comprehensive Flask-based web application for learning data structures through
 - Advanced Algorithms (A*, Huffman Coding)
 
 ## Installation
+### Option 1: Docker (Recommended)
 
+#### Prerequisites
+- Docker Desktop (Windows/macOS) or Docker Engine (Linux)
+
+#### Quick Start with Docker Compose
+1. Open a terminal in the project directory.
+2. Build and start the app:
+   ```powershell
+   docker compose up --build
+   ```
+3. Open your browser to: [http://localhost:5000](http://localhost:5000)
+
+#### Stopping the app
+```powershell
+docker compose down
+```
+
+#### Environment Variables
+You can set environment variables in `docker-compose.yml`:
+```
+SESSION_SECRET=your-strong-secret-key-here
+DATABASE_URL=sqlite:///instance/visudsa.db
+```
+
+### Option 2: Local Python
 ### Prerequisites
-
 - Python 3.11 or higher
 - pip (Python package manager)
 
@@ -78,6 +102,33 @@ A comprehensive Flask-based web application for learning data structures through
 5. **Access the platform**:
    Open your browser and navigate to: `http://localhost:5000`
    **Or view the live deployment at: [https://visudsa.onrender.com](https://visudsa.onrender.com)**
+
+## Usage
+
+### Running with Docker
+1. Make sure Docker is running.
+2. Run:
+   ```powershell
+   docker compose up --build
+   ```
+3. Visit [http://localhost:5000](http://localhost:5000)
+
+### Running Locally (Windows)
+1. Double-click `start_visudsa.bat` or run in terminal:
+   ```powershell
+   .\start_visudsa.bat
+   ```
+
+### Running Locally (macOS/Linux)
+1. Run in terminal:
+   ```bash
+   ./start_visudsa.sh
+   ```
+
+### Manual Run
+```powershell
+python main.py
+```
 
 ## Default Admin Account
 
@@ -183,12 +234,22 @@ The platform includes security measures for code execution:
 - **Visualization**: SVG with D3.js-style interactions
 - **Security**: Werkzeug password hashing
 
-## Browser Compatibility
+- **Containerization**: Docker, Docker Compose
 
-- Chrome 70+
-- Firefox 65+
-- Safari 12+
-- Edge 79+
+## Requirements
+
+All dependencies are listed in `requirements.txt` and `pyproject.toml`.
+
+Main packages:
+- Flask
+- Flask-SQLAlchemy
+- Flask-Login
+- Werkzeug
+- SQLAlchemy
+- email-validator
+- gunicorn (optional, for production)
+- psycopg2-binary (optional, for PostgreSQL)
+- PyJWT, oauthlib (security)
 
 ## Troubleshooting
 
