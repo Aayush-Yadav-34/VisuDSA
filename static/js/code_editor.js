@@ -262,14 +262,7 @@ function clearCode() {
  */
 function updateEditorMode(language) {
     if (!codeEditor) return;
-    
-    const modeMap = {
-        'python': 'python',
-        'javascript': 'javascript'
-    };
-    
-    const mode = modeMap[language] || 'text';
-    codeEditor.setOption('mode', mode);
+    codeEditor.setOption('mode', 'python');
 }
 
 /**
@@ -277,53 +270,7 @@ function updateEditorMode(language) {
  */
 function updateDefaultCode(language) {
     if (!codeEditor) return;
-    
-    const defaultCodes = {
-        'python': `# Welcome to the Data Structures Code Editor!
-# Write your Python code here and click "Run Code" to execute it.
-
-# Example: Creating and using a simple list
-my_list = [1, 2, 3, 4, 5]
-print("Original list:", my_list)
-
-# Add an element
-my_list.append(6)
-print("After appending 6:", my_list)
-
-# Remove an element
-my_list.remove(3)
-print("After removing 3:", my_list)
-
-# Find an element
-if 4 in my_list:
-    print("Found 4 in the list at index:", my_list.index(4))
-`,
-        'javascript': `// Welcome to the Data Structures Code Editor!
-// Write your JavaScript code here and click "Run Code" to execute it.
-
-// Example: Creating and using a simple array
-let myArray = [1, 2, 3, 4, 5];
-console.log("Original array:", myArray);
-
-// Add an element
-myArray.push(6);
-console.log("After pushing 6:", myArray);
-
-// Remove an element
-let index = myArray.indexOf(3);
-if (index > -1) {
-    myArray.splice(index, 1);
-}
-console.log("After removing 3:", myArray);
-
-// Find an element
-if (myArray.includes(4)) {
-    console.log("Found 4 in the array at index:", myArray.indexOf(4));
-}
-`
-    };
-    
-    const defaultCode = defaultCodes[language] || defaultCodes['python'];
+    const defaultCode = `# Welcome to the Data Structures Code Editor!`
     codeEditor.setValue(defaultCode);
 }
 
@@ -341,7 +288,7 @@ function loadCodeExample(button) {
     
     // Confirm before loading if there's existing code
     const currentCode = codeEditor.getValue();
-    if (currentCode.trim().length > 0 && currentCode !== getDefaultCode(language)) {
+    if (currentCode.trim().length > 0 && currentCode !== defaultPythonCode) {
         if (!confirm('This will replace your current code. Continue?')) {
             return;
         }
@@ -358,12 +305,7 @@ function loadCodeExample(button) {
     
     // Clear output
     const outputContainer = document.getElementById('output-container');
-    outputContainer.innerHTML = `
-        <div class="text-info">
-            <i class="fas fa-code me-2"></i>
-            Example code loaded. Click "Run Code" to execute it.
-        </div>
-    `;
+        outputContainer.innerHTML = '<div class="text-info"><i class="fas fa-code me-2"></i>Example code loaded. Click "Run Code" to execute it.</div>';
     
     DSLearningPlatform.showToast('Code example loaded successfully!', 'success');
 }
@@ -371,54 +313,7 @@ function loadCodeExample(button) {
 /**
  * Get default code for a language
  */
-function getDefaultCode(language) {
-    const defaultCodes = {
-        'python': `# Welcome to the Data Structures Code Editor!
-# Write your Python code here and click "Run Code" to execute it.
-
-# Example: Creating and using a simple list
-my_list = [1, 2, 3, 4, 5]
-print("Original list:", my_list)
-
-# Add an element
-my_list.append(6)
-print("After appending 6:", my_list)
-
-# Remove an element
-my_list.remove(3)
-print("After removing 3:", my_list)
-
-# Find an element
-if 4 in my_list:
-    print("Found 4 in the list at index:", my_list.index(4))
-`,
-        'javascript': `// Welcome to the Data Structures Code Editor!
-// Write your JavaScript code here and click "Run Code" to execute it.
-
-// Example: Creating and using a simple array
-let myArray = [1, 2, 3, 4, 5];
-console.log("Original array:", myArray);
-
-// Add an element
-myArray.push(6);
-console.log("After pushing 6:", myArray);
-
-// Remove an element
-let index = myArray.indexOf(3);
-if (index > -1) {
-    myArray.splice(index, 1);
-}
-console.log("After removing 3:", myArray);
-
-// Find an element
-if (myArray.includes(4)) {
-    console.log("Found 4 in the array at index:", myArray.indexOf(4));
-}
-`
-    };
-    
-    return defaultCodes[language] || defaultCodes['python'];
-}
+// getDefaultCode removed: only Python is supported now
 
 // Auto-save code to localStorage
 if (typeof(Storage) !== "undefined") {
