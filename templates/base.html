@@ -72,6 +72,9 @@
                                 {% endif %}
                             </a>
                             <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('user_profile') }}">
+                                    <i class="fas fa-user me-2"></i>My Profile
+                                </a></li>
                                 {% if current_user.is_admin %}
                                     <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
                                         <i class="fas fa-shield-alt me-2"></i>Admin Dashboard
@@ -107,6 +110,26 @@
     </nav>
 
     <!-- Main Content -->
+    <!-- Global Toast Container for Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    <div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 1080;">
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            {% for category, message in messages %}
+            <div class="toast text-bg-{{ 'danger' if category in ['error','danger'] else category }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+
     <main class="flex-grow-1">
         {% block content %}{% endblock %}
     </main>
@@ -142,6 +165,15 @@
     
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        toastElList.forEach(function (toastEl) {
+            var toast = new bootstrap.Toast(toastEl)
+            toast.show()
+        })
+    })
+    </script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

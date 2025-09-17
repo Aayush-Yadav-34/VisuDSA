@@ -25,17 +25,22 @@ def login():
         user = User.query.filter_by(username=username).first()
         
         if user and user.check_password(password):
+            if user.is_blocked:
+                flash('Your account has been blocked. Please contact an administrator.', 'danger')
+                return render_template('login.html')
+            
             login_user(user)
             user.last_login = datetime.utcnow()
             db.session.commit()
             
+            flash(f'Welcome back, {user.username}!', 'success')
             next_page = request.args.get('next')
             if user.is_admin:
                 return redirect(next_page) if next_page else redirect(url_for('admin_dashboard'))
             else:
                 return redirect(next_page) if next_page else redirect(url_for('index'))
         else:
-            flash('Invalid username or password')
+            flash('Invalid username or password', 'danger')
     
     return render_template('login.html')
 
@@ -48,11 +53,11 @@ def register():
         password = request.form['password']
         
         if User.query.filter_by(username=username).first():
-            flash('Username already exists')
+            flash('Username already exists', 'warning')
             return render_template('register.html')
         
         if User.query.filter_by(email=email).first():
-            flash('Email already exists')
+            flash('Email already exists', 'warning')
             return render_template('register.html')
         
         user = User(username=username, email=email)
@@ -61,7 +66,7 @@ def register():
         db.session.commit()
         
         login_user(user)
-        flash('Registration successful')
+        flash('Registration successful. Welcome!', 'success')
         return redirect(url_for('index'))
     
     return render_template('register.html')
@@ -71,7 +76,7 @@ def register():
 def logout():
     """User logout"""
     logout_user()
-    flash('You have been logged out')
+    flash('You have been logged out', 'info')
     return redirect(url_for('index'))
 
 @app.route('/admin')
@@ -79,7 +84,7 @@ def logout():
 def admin_dashboard():
     """Admin dashboard"""
     if not current_user.is_admin:
-        flash('Access denied: Admin privileges required')
+        flash('Access denied: Admin privileges required', 'danger')
         return redirect(url_for('index'))
     
     # Get statistics
@@ -97,6 +102,120 @@ def admin_dashboard():
                          total_quiz_attempts=total_quiz_attempts,
                          recent_users=recent_users,
                          recent_submissions=recent_submissions)
+
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    """Admin user management page"""
+    if not current_user.is_admin:
+        flash('Access denied: Admin privileges required', 'danger')
+        return redirect(url_for('index'))
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    users = User.query.order_by(User.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    
+    return render_template('admin_users.html', users=users)
+
+@app.route('/admin/block-user/<int:user_id>', methods=['POST'])
+@login_required
+def block_user(user_id):
+    """Block a user"""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Access denied'})
+    
+    user = User.query.get_or_404(user_id)
+    if user.is_admin:
+        return jsonify({'success': False, 'error': 'Cannot block admin users'})
+    
+    reason = request.json.get('reason', 'No reason provided')
+    user.block_user(reason)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': f'User {user.username} has been blocked'})
+
+@app.route('/admin/unblock-user/<int:user_id>', methods=['POST'])
+@login_required
+def unblock_user(user_id):
+    """Unblock a user"""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Access denied'})
+    
+    user = User.query.get_or_404(user_id)
+    user.unblock_user()
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': f'User {user.username} has been unblocked'})
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    """Delete a user"""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': 'Access denied'})
+    
+    user = User.query.get_or_404(user_id)
+    if user.is_admin:
+        return jsonify({'success': False, 'error': 'Cannot delete admin users'})
+    
+    username = user.username
+    
+    # Delete related records
+    UserProgress.query.filter_by(user_id=user_id).delete()
+    QuizAttempt.query.filter_by(user_id=user_id).delete()
+    CodeSubmission.query.filter_by(user_id=user_id).delete()
+    
+    # Delete the user
+    db.session.delete(user)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': f'User {username} has been deleted'})
+
+@app.route('/profile')
+@login_required
+def user_profile():
+    """User profile page"""
+    # Get user statistics
+    progress_count = UserProgress.query.filter_by(user_id=current_user.id).count()
+    quiz_attempts = QuizAttempt.query.filter_by(user_id=current_user.id).count()
+    code_submissions = CodeSubmission.query.filter_by(user_id=current_user.id).count()
+    
+    # Get recent activity
+    recent_progress = UserProgress.query.filter_by(user_id=current_user.id).order_by(UserProgress.timestamp.desc()).limit(5).all()
+    recent_submissions = CodeSubmission.query.filter_by(user_id=current_user.id).order_by(CodeSubmission.timestamp.desc()).limit(5).all()
+    
+    return render_template('user_profile.html',
+                         progress_count=progress_count,
+                         quiz_attempts=quiz_attempts,
+                         code_submissions=code_submissions,
+                         recent_progress=recent_progress,
+                         recent_submissions=recent_submissions)
+
+@app.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    """Delete current user's account"""
+    user_id = current_user.id
+    username = current_user.username
+    
+    # Delete related records
+    UserProgress.query.filter_by(user_id=user_id).delete()
+    QuizAttempt.query.filter_by(user_id=user_id).delete()
+    CodeSubmission.query.filter_by(user_id=user_id).delete()
+    
+    # Logout user first
+    logout_user()
+    
+    # Delete the user
+    user = User.query.get(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash('Your account has been successfully deleted.', 'success')
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():

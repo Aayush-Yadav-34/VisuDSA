@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - VisuDSA{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user"></i> My Profile</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-home"></i> Back to Platform
+        </a>
+    </div>
+    
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar-circle mx-auto mb-3">
+                        {{ current_user.username[0].upper() }}
+                    </div>
+                    <h4>{{ current_user.username }}</h4>
+                    <p class="text-muted">{{ current_user.email }}</p>
+                    <p class="small text-muted">
+                        Member since {{ current_user.created_at.strftime('%B %Y') }}
+                    </p>
+                    {% if current_user.last_login %}
+                        <p class="small text-muted">
+                            Last login: {{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-bar"></i> Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h5 class="text-primary">{{ progress_count }}</h5>
+                            <small class="text-muted">Modules</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-success">{{ quiz_attempts }}</h5>
+                            <small class="text-muted">Quiz Attempts</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-info">{{ code_submissions }}</h5>
+                            <small class="text-muted">Code Runs</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <!-- Recent Activity -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_progress or recent_submissions %}
+                        <div class="timeline">
+                            {% for progress in recent_progress %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Completed {{ progress.module_name|title }} - {{ progress.section_name|title }}</h6>
+                                    <p class="text-muted small mb-0">
+                                        {{ progress.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% if progress.score > 0 %}
+                                            - Score: {{ progress.score }}%
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% for submission in recent_submissions %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-info"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Code Execution - {{ submission.language|title }}</h6>
+                                    <p class="text-muted small mb-0">
+                                        {{ submission.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% if submission.error %}
+                                            - <span class="text-danger">Error</span>
+                                        {% else %}
+                                            - <span class="text-success">Success</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clock fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No recent activity. Start learning!</p>
+                            <a href="{{ url_for('theory') }}" class="btn btn-primary">Explore Theory</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Learning Progress -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-graduation-cap"></i> Learning Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Theory Modules</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: 0%" id="theoryProgress">
+                                    <span id="theoryProgressText">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Quiz Completion</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 0%" id="quizProgress">
+                                    <span id="quizProgressText">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('theory') }}" class="btn btn-outline-primary me-2">Continue Learning</a>
+                        <a href="{{ url_for('quiz') }}" class="btn btn-outline-success me-2">Take Quiz</a>
+                        <a href="{{ url_for('code_editor') }}" class="btn btn-outline-info">Practice Coding</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog"></i> Account Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Account Information</h6>
+                            <p class="text-muted small">
+                                Username: <strong>{{ current_user.username }}</strong><br>
+                                Email: <strong>{{ current_user.email }}</strong><br>
+                                Account Type: <strong>{% if current_user.is_admin %}Administrator{% else %}Student{% endif %}</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Danger Zone</h6>
+                            <p class="text-muted small mb-3">
+                                Permanently delete your account and all associated data.
+                            </p>
+                            <button class="btn btn-outline-danger btn-sm" onclick="showDeleteConfirmation()">
+                                <i class="fas fa-trash"></i> Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+                <p>Are you sure you want to delete your account? This will permanently remove:</p>
+                <ul>
+                    <li>Your profile and account information</li>
+                    <li>All learning progress and achievements</li>
+                    <li>All quiz attempts and scores</li>
+                    <li>All code submissions and execution history</li>
+                </ul>
+                <p class="text-danger"><strong>This action is irreversible!</strong></p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete">
+                    <label class="form-check-label" for="confirmDelete">
+                        I understand that this action cannot be undone
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>Delete My Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 32px;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+</style>
+
+<script>
+// Load progress data
+document.addEventListener('DOMContentLoaded', function() {
+    loadProgressData();
+});
+
+function loadProgressData() {
+    fetch('/progress')
+        .then(response => response.json())
+        .then(data => {
+            updateProgressBars(data);
+        })
+        .catch(error => {
+            console.error('Error loading progress:', error);
+        });
+}
+
+function updateProgressBars(progressData) {
+    // Calculate theory progress
+    const theoryModules = ['theory'];
+    let theoryCompleted = 0;
+    let theoryTotal = 0;
+    
+    if (progressData.theory) {
+        theoryTotal = Object.keys(progressData.theory).length;
+        theoryCompleted = Object.values(progressData.theory).filter(p => p.completed).length;
+    }
+    
+    const theoryPercentage = theoryTotal > 0 ? Math.round((theoryCompleted / theoryTotal) * 100) : 0;
+    document.getElementById('theoryProgress').style.width = theoryPercentage + '%';
+    document.getElementById('theoryProgressText').textContent = theoryPercentage + '%';
+    
+    // Calculate quiz progress
+    const quizModules = ['quiz'];
+    let quizCompleted = 0;
+    let quizTotal = 0;
+    
+    if (progressData.quiz) {
+        quizTotal = Object.keys(progressData.quiz).length;
+        quizCompleted = Object.values(progressData.quiz).filter(p => p.completed).length;
+    }
+    
+    const quizPercentage = quizTotal > 0 ? Math.round((quizCompleted / quizTotal) * 100) : 0;
+    document.getElementById('quizProgress').style.width = quizPercentage + '%';
+    document.getElementById('quizProgressText').textContent = quizPercentage + '%';
+}
+
+function showDeleteConfirmation() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+    modal.show();
+}
+
+// Enable delete button when checkbox is checked
+document.getElementById('confirmDelete').addEventListener('change', function() {
+    document.getElementById('confirmDeleteBtn').disabled = !this.checked;
+});
+
+// Handle account deletion
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/delete-account';
+        
+        // Add CSRF token if needed (Flask-WTF)
+        const csrfToken = document.querySelector('meta[name=csrf-token]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken.getAttribute('content');
+            form.appendChild(csrfInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+</script>
+{% endblock %}

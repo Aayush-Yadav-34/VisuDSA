@@ -12,8 +12,11 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+    is_blocked = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    blocked_at = db.Column(db.DateTime)
+    blocked_reason = db.Column(db.Text)
     
     # Relationships
     progress_records = db.relationship('UserProgress', backref='user', lazy=True)
@@ -27,6 +30,22 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         """Check password"""
         return check_password_hash(self.password_hash, password)
+    
+    def block_user(self, reason=None):
+        """Block the user"""
+        self.is_blocked = True
+        self.blocked_at = datetime.utcnow()
+        self.blocked_reason = reason
+    
+    def unblock_user(self):
+        """Unblock the user"""
+        self.is_blocked = False
+        self.blocked_at = None
+        self.blocked_reason = None
+    
+    def is_active(self):
+        """Check if user is active (not blocked)"""
+        return not self.is_blocked
     
     def __repr__(self):
         return f'<User {self.username}>'
