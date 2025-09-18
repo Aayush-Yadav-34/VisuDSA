@@ -557,6 +557,27 @@ function renderGraphVisualization(svg) {
 }
 
 /**
+ * Step-by-step explanation helpers
+ */
+function setStepExplanation(steps) {
+    const container = document.getElementById('step-explanation');
+    if (!container) return;
+    container.innerHTML = '';
+    steps.forEach((text, idx) => {
+        const row = document.createElement('div');
+        row.className = 'mb-1';
+        row.innerHTML = `<strong>Step ${idx + 1}:</strong> ${text}`;
+        container.appendChild(row);
+    });
+}
+
+function clearStepExplanation() {
+    const container = document.getElementById('step-explanation');
+    if (!container) return;
+    container.innerHTML = '<div class="text-muted">Perform an operation to see step-by-step explanation</div>';
+}
+
+/**
  * Render hash table visualization
  */
 function renderHashTableVisualization(svg) {
@@ -1195,10 +1216,12 @@ function setupGraphControls() {
             return;
         }
         const visited = [];
+        const steps = [`Start DFS from ${start}`];
         const traversedEdges = [];
         async function dfs(nodeId) {
             if (visited.includes(nodeId)) return;
             visited.push(nodeId);
+            steps.push(`Visit ${nodeId}`);
             visualizationData.traversal = [...visited];
             visualizationData.traversedEdges = [...traversedEdges];
             updateVisualization();
@@ -1206,6 +1229,7 @@ function setupGraphControls() {
             for (const [ei, e] of visualizationData.edges.map((e, i) => [i, e])) {
                 if (e.from === nodeId && !visited.includes(e.to)) {
                     traversedEdges.push(ei);
+                    steps.push(`Traverse edge ${e.from} → ${e.to}`);
                     visualizationData.traversedEdges = [...traversedEdges];
                     updateVisualization();
                     await new Promise(res => setTimeout(res, 600));
@@ -1218,6 +1242,7 @@ function setupGraphControls() {
         DSLearningPlatform.showToast(`DFS: ${visited.join(' → ')}`, 'info');
         visualizationData.traversedEdges = [];
         updateVisualization();
+        setStepExplanation(steps);
     });
 
     // BFS with animation and edge highlight
@@ -1232,12 +1257,15 @@ function setupGraphControls() {
             return;
         }
         const visited = [];
+        const steps = [`Start BFS from ${start}`];
         const traversedEdges = [];
         const queue = [start];
+        steps.push(`Enqueue ${start}`);
         while (queue.length) {
             const nodeId = queue.shift();
             if (!visited.includes(nodeId)) {
                 visited.push(nodeId);
+                steps.push(`Dequeue ${nodeId} and visit`);
                 visualizationData.traversal = [...visited];
                 visualizationData.traversedEdges = [...traversedEdges];
                 updateVisualization();
@@ -1245,6 +1273,7 @@ function setupGraphControls() {
                 for (const [ei, e] of visualizationData.edges.map((e, i) => [i, e])) {
                     if (e.from === nodeId && !visited.includes(e.to) && !queue.includes(e.to)) {
                         traversedEdges.push(ei);
+                        steps.push(`Discover ${e.to} via ${e.from} → ${e.to}; enqueue ${e.to}`);
                         visualizationData.traversedEdges = [...traversedEdges];
                         updateVisualization();
                         await new Promise(res => setTimeout(res, 600));
@@ -1257,6 +1286,7 @@ function setupGraphControls() {
         DSLearningPlatform.showToast(`BFS: ${visited.join(' → ')}`, 'info');
         visualizationData.traversedEdges = [];
         updateVisualization();
+        setStepExplanation(steps);
     });
 
     // Clear
@@ -1267,6 +1297,7 @@ function setupGraphControls() {
         visualizationData.highlighted = { node: null, edge: null };
         logOperation('Graph cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
@@ -1295,8 +1326,10 @@ function setupHashTableControls() {
         if (!found) {
             visualizationData.buckets[bucket].push({ key, value });
             logOperation(`Inserted key: ${key}, value: ${value} in bucket ${bucket}`);
+            setStepExplanation([`Hash '${key}' to bucket ${bucket}`, 'Append key-value to that bucket list']);
         } else {
             logOperation(`Updated key: ${key} with value: ${value} in bucket ${bucket}`);
+            setStepExplanation([`Hash '${key}' to bucket ${bucket}`, 'Key exists; update its value']);
         }
         visualizationData.highlighted = { bucket, key };
         updateVisualization();
@@ -1317,9 +1350,11 @@ function setupHashTableControls() {
         if (found) {
             DSLearningPlatform.showToast(`Found key: ${key}, value: ${found.value} in bucket ${bucket}`, 'success');
             logOperation(`Searched key: ${key}, found value: ${found.value} in bucket ${bucket}`);
+            setStepExplanation([`Hash '${key}' to bucket ${bucket}`, 'Scan bucket list to find the key']);
         } else {
             DSLearningPlatform.showToast(`Key: ${key} not found`, 'info');
             logOperation(`Searched key: ${key}, not found`);
+            setStepExplanation([`Hash '${key}' to bucket ${bucket}`, 'Key not present in that bucket list']);
         }
         updateVisualization();
         document.getElementById('ht-search-key').value = '';
@@ -1338,9 +1373,11 @@ function setupHashTableControls() {
             visualizationData.buckets[bucket].splice(idx, 1);
             DSLearningPlatform.showToast(`Deleted key: ${key} from bucket ${bucket}`, 'success');
             logOperation(`Deleted key: ${key} from bucket ${bucket}`);
+            setStepExplanation([`Hash '${key}' to bucket ${bucket}`, 'Find and remove the key from the list']);
         } else {
             DSLearningPlatform.showToast(`Key: ${key} not found`, 'info');
             logOperation(`Tried to delete key: ${key}, not found`);
+            setStepExplanation([`Hash '${key}' to bucket ${bucket}`, 'Key not present; nothing to delete']);
         }
         visualizationData.highlighted = { bucket, key };
         updateVisualization();
@@ -1353,6 +1390,7 @@ function setupHashTableControls() {
         visualizationData.highlighted = { bucket: -1, key: null };
         logOperation('Hash table cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
@@ -1382,6 +1420,12 @@ function setupPriorityQueueControls() {
         updateVisualization();
         document.getElementById('pq-value').value = '';
         document.getElementById('pq-priority').value = '';
+        setStepExplanation([
+            `Insert (${value}, priority ${priority}) into heap`,
+            'Place at the end',
+            'Heapify up: swap with parent while greater than parent',
+            'Stop when heap property holds'
+        ]);
     });
 
     // Dequeue (Extract Max)
@@ -1398,6 +1442,11 @@ function setupPriorityQueueControls() {
         }
         logOperation(`Dequeued max: ${max.value} (priority ${max.priority})`);
         updateVisualization();
+        setStepExplanation([
+            'Remove root (max element)',
+            'Move last element to root',
+            'Heapify down: swap with larger child until heap property holds'
+        ]);
     });
 
     // Front (Max)
@@ -1409,6 +1458,7 @@ function setupPriorityQueueControls() {
         const max = visualizationData.heap[0];
         DSLearningPlatform.showToast(`Front (Max): ${max.value} (priority ${max.priority})`, 'info');
         logOperation(`Front (Max): ${max.value} (priority ${max.priority})`);
+        setStepExplanation(['The root of a max-heap is always the maximum element']);
     });
 
     // Rear (Min)
@@ -1425,6 +1475,7 @@ function setupPriorityQueueControls() {
         const min = visualizationData.heap[minIdx];
         DSLearningPlatform.showToast(`Rear (Min): ${min.value} (priority ${min.priority})`, 'info');
         logOperation(`Rear (Min): ${min.value} (priority ${min.priority})`);
+        setStepExplanation(['In an unsorted array view of heap nodes, find min by scanning all nodes']);
     });
 
     // Clear
@@ -1432,6 +1483,7 @@ function setupPriorityQueueControls() {
         visualizationData.heap = [];
         logOperation('Priority Queue cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 // End of setupPriorityQueueControls
 
@@ -1490,12 +1542,22 @@ function setupDoublyLinkedListControls() {
                 if (nodes[i].prev !== null && nodes[i].prev !== i - 1) nodes[i].prev = i - 1 >= 0 ? i - 1 : null;
             }
             logOperation(`Added ${value} at start of list`);
+            setStepExplanation([
+                `Create node ${value}`,
+                'Set its next to previous head',
+                'Update head and fix prev/next indices'
+            ]);
         } else if (position === 'end') {
             // Insert at end
             const newNode = { value, prev: nodes.length - 1 >= 0 ? nodes.length - 1 : null, next: null };
             if (nodes.length > 0) nodes[nodes.length - 1].next = nodes.length;
             nodes.push(newNode);
             logOperation(`Added ${value} at end of list`);
+            setStepExplanation([
+                `Create node ${value}`,
+                'Link current tail to new node',
+                'Update tail and indices'
+            ]);
         }
         updateVisualization();
         document.getElementById('dll-value').value = '';
@@ -1526,6 +1588,11 @@ function setupDoublyLinkedListControls() {
         logOperation(`Removed ${value} from list`);
         updateVisualization();
         document.getElementById('dll-remove-value').value = '';
+        setStepExplanation([
+            `Locate node ${value}`,
+            'Relink its prev and next neighbors together',
+            'Fix indices of remaining nodes'
+        ]);
     });
 
     // Traverse Forward
@@ -1543,6 +1610,11 @@ function setupDoublyLinkedListControls() {
         }
         DSLearningPlatform.showToast('Forward: ' + values.join(' → '), 'info');
         logOperation('Traversed forward: ' + values.join(' → '));
+        setStepExplanation([
+            'Start from head',
+            'Follow next pointers until tail',
+            `Visit order: ${values.join(' → ')}`
+        ]);
     });
 
     // Traverse Backward
@@ -1560,6 +1632,11 @@ function setupDoublyLinkedListControls() {
         }
         DSLearningPlatform.showToast('Backward: ' + values.join(' ← '), 'info');
         logOperation('Traversed backward: ' + values.join(' ← '));
+        setStepExplanation([
+            'Start from tail',
+            'Follow prev pointers until head',
+            `Visit order: ${values.join(' ← ')}`
+        ]);
     });
 
     // Clear All
@@ -1567,6 +1644,7 @@ function setupDoublyLinkedListControls() {
         visualizationData.nodes = [];
         logOperation('Doubly linked list cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
@@ -1586,11 +1664,21 @@ function setupArrayControls() {
         if (index === '' || index === null) {
             visualizationData.elements.push(value);
             logOperation(`Added ${value} to end of array`);
+            setStepExplanation([
+                `Append ${value} to the end`,
+                'No shifting needed',
+                `Array size becomes ${visualizationData.elements.length}`
+            ]);
         } else {
             const idx = parseInt(index);
             if (idx >= 0 && idx <= visualizationData.elements.length) {
                 visualizationData.elements.splice(idx, 0, value);
                 logOperation(`Inserted ${value} at index ${idx}`);
+                setStepExplanation([
+                    `Insert ${value} at index ${idx}`,
+                    'Shift elements right from that index by one',
+                    'Place new value at target index'
+                ]);
             } else {
                 DSLearningPlatform.showToast('Invalid index', 'warning');
                 return;
@@ -1614,6 +1702,10 @@ function setupArrayControls() {
         logOperation(`Removed ${removed} from index ${index}`);
         updateVisualization();
         document.getElementById('array-remove-index').value = '';
+        setStepExplanation([
+            `Remove element at index ${index}`,
+            'Shift following elements left by one to fill the gap'
+        ]);
     });
     
     document.getElementById('array-search')?.addEventListener('click', () => {
@@ -1629,10 +1721,18 @@ function setupArrayControls() {
             visualizationData.highlightedIndex = index;
             logOperation(`Found ${value} at index ${index}`);
             DSLearningPlatform.showToast(`Found ${value} at index ${index}`, 'success');
+            setStepExplanation([
+                `Linear search for ${value}`,
+                `Compare sequentially until index ${index} is found`
+            ]);
         } else {
             visualizationData.highlightedIndex = -1;
             logOperation(`${value} not found in array`);
             DSLearningPlatform.showToast(`${value} not found in array`, 'info');
+            setStepExplanation([
+                `Linear search for ${value}`,
+                'Compared all elements, no match found'
+            ]);
         }
         
         updateVisualization();
@@ -1643,6 +1743,10 @@ function setupArrayControls() {
         visualizationData.elements.sort((a, b) => a - b);
         logOperation('Array sorted in ascending order');
         updateVisualization();
+        setStepExplanation([
+            'Sort array in ascending order',
+            'Using built-in sort with numeric comparator'
+        ]);
     });
     
     document.getElementById('array-shuffle')?.addEventListener('click', () => {
@@ -1653,6 +1757,10 @@ function setupArrayControls() {
         }
         logOperation('Array shuffled');
         updateVisualization();
+        setStepExplanation([
+            'Shuffle using Fisher–Yates algorithm',
+            'Swap each element with a random earlier index'
+        ]);
     });
     
     document.getElementById('array-clear')?.addEventListener('click', () => {
@@ -1660,6 +1768,7 @@ function setupArrayControls() {
         visualizationData.highlightedIndex = -1;
         logOperation('Array cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
@@ -1679,6 +1788,10 @@ function setupStackControls() {
         logOperation(`Pushed ${value} onto stack`);
         updateVisualization();
         document.getElementById('stack-value').value = '';
+        setStepExplanation([
+            `Push ${value} onto stack`,
+            'Place element at the top (end of array)'
+        ]);
     });
     
     document.getElementById('stack-pop')?.addEventListener('click', () => {
@@ -1691,6 +1804,10 @@ function setupStackControls() {
         const popped = visualizationData.elements.pop();
         logOperation(`Popped ${popped} from stack`);
         updateVisualization();
+        setStepExplanation([
+            'Pop removes the top element',
+            `Removed ${popped} from the end`
+        ]);
     });
     
     document.getElementById('stack-peek')?.addEventListener('click', () => {
@@ -1703,12 +1820,14 @@ function setupStackControls() {
         const top = visualizationData.elements[visualizationData.elements.length - 1];
         DSLearningPlatform.showToast(`Top element: ${top}`, 'info');
         logOperation(`Peeked at top element: ${top}`);
+        setStepExplanation(['Peek returns the top element without removing it']);
     });
     
     document.getElementById('stack-clear')?.addEventListener('click', () => {
         visualizationData.elements = [];
         logOperation('Stack cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
@@ -1729,6 +1848,10 @@ function setupQueueControls() {
         logOperation(`Enqueued ${value} to queue`);
         updateVisualization();
         document.getElementById('queue-value').value = '';
+        setStepExplanation([
+            `Enqueue ${value}`,
+            'Insert at the rear and move rear pointer forward'
+        ]);
     });
     
     document.getElementById('queue-dequeue')?.addEventListener('click', () => {
@@ -1742,6 +1865,10 @@ function setupQueueControls() {
         visualizationData.rear = Math.max(0, visualizationData.elements.length - 1);
         logOperation(`Dequeued ${dequeued} from queue`);
         updateVisualization();
+        setStepExplanation([
+            'Dequeue removes from the front',
+            `Removed ${dequeued} and shifted remaining items left`
+        ]);
     });
     
     document.getElementById('queue-front')?.addEventListener('click', () => {
@@ -1754,6 +1881,7 @@ function setupQueueControls() {
         const front = visualizationData.elements[0];
         DSLearningPlatform.showToast(`Front element: ${front}`, 'info');
         logOperation(`Front element: ${front}`);
+        setStepExplanation(['Front returns the element at the head without removing it']);
     });
     
     document.getElementById('queue-rear')?.addEventListener('click', () => {
@@ -1766,6 +1894,7 @@ function setupQueueControls() {
         const rear = visualizationData.elements[visualizationData.elements.length - 1];
         DSLearningPlatform.showToast(`Rear element: ${rear}`, 'info');
         logOperation(`Rear element: ${rear}`);
+        setStepExplanation(['Rear returns the element at the tail without removing it']);
     });
     
     document.getElementById('queue-clear')?.addEventListener('click', () => {
@@ -1774,6 +1903,7 @@ function setupQueueControls() {
         visualizationData.rear = 0;
         logOperation('Queue cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
@@ -1811,12 +1941,22 @@ function setupLinkedListControls() {
                 }
             }
             logOperation(`Added ${value} at start of list`);
+            setStepExplanation([
+                `Create node ${value}`,
+                'Point new node to current head',
+                'Update head to new node'
+            ]);
         } else if (position === 'end') {
             if (visualizationData.nodes.length > 0) {
                 visualizationData.nodes[visualizationData.nodes.length - 1].next = visualizationData.nodes.length;
             }
             visualizationData.nodes.push(newNode);
             logOperation(`Added ${value} at end of list`);
+            setStepExplanation([
+                `Create node ${value}`,
+                'Link current tail to new node',
+                'New node becomes tail'
+            ]);
         } else if (position === 'index') {
             const index = parseInt(document.getElementById('ll-index').value);
             if (isNaN(index) || index < 0 || index > visualizationData.nodes.length) {
@@ -1829,6 +1969,10 @@ function setupLinkedListControls() {
                 visualizationData.nodes[i].next = i + 1;
             }
             logOperation(`Added ${value} at index ${index}`);
+            setStepExplanation([
+                `Insert ${value} at position ${index}`,
+                'Relink next pointers to include the new node'
+            ]);
         }
         
         updateVisualization();
@@ -1862,6 +2006,11 @@ function setupLinkedListControls() {
         logOperation(`Removed ${value} from list`);
         updateVisualization();
         document.getElementById('ll-remove-value').value = '';
+        setStepExplanation([
+            `Find node with value ${value}`,
+            'Bypass it by linking previous to next',
+            'Update tail if last node was removed'
+        ]);
     });
     
     document.getElementById('ll-search')?.addEventListener('click', () => {
@@ -1876,9 +2025,17 @@ function setupLinkedListControls() {
         if (index !== -1) {
             DSLearningPlatform.showToast(`Found ${value} at position ${index}`, 'success');
             logOperation(`Found ${value} at position ${index}`);
+            setStepExplanation([
+                `Traverse from head comparing each node`,
+                `Match found at position ${index}`
+            ]);
         } else {
             DSLearningPlatform.showToast(`${value} not found in list`, 'info');
             logOperation(`${value} not found in list`);
+            setStepExplanation([
+                `Traverse from head comparing each node`,
+                'No node contains the target value'
+            ]);
         }
         
         document.getElementById('ll-search-value').value = '';
@@ -1888,6 +2045,7 @@ function setupLinkedListControls() {
         visualizationData.nodes = [];
         logOperation('Linked list cleared');
         updateVisualization();
+        clearStepExplanation();
     });
 }
 
