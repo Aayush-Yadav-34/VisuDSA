@@ -313,8 +313,20 @@ function getInitialData(dataStructure) {
         case 'dfs_bfs':
             // Graph: nodes as array of {id, x, y}, edges as array of {from, to}
             return {
-                nodes: [],
-                edges: [],
+                nodes: [
+                    { id: '0', x: 140, y: 120 },
+                    { id: '1', x: 320, y: 80 },
+                    { id: '2', x: 320, y: 160 },
+                    { id: '3', x: 500, y: 60 },
+                    { id: '4', x: 500, y: 180 }
+                ],
+                edges: [
+                    { from: '0', to: '1' },
+                    { from: '0', to: '2' },
+                    { from: '1', to: '3' },
+                    { from: '2', to: '4' },
+                    { from: '1', to: '2' }
+                ],
                 traversal: [],
                 highlighted: { node: null, edge: null }
             };
