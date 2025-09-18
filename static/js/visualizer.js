@@ -363,10 +363,25 @@ function getInitialData(dataStructure) {
             };
         case 'hash_table':
             // Simple hash table with 10 buckets
-            return {
-                buckets: Array.from({ length: 10 }, () => []),
-                highlighted: { bucket: -1, key: null }
-            };
+            {
+                // Pre-populate with a few entries hashed into buckets
+                const buckets = Array.from({ length: 10 }, () => []);
+                const initialPairs = [
+                    { key: '10', value: 'Aayush' },
+                    { key: '5', value: 'Klein' },
+                    { key: '15', value: 'Gherman' },
+                    { key: '25', value: 'Jin' },
+                    { key: '35', value: 'Deku' }
+                ];
+                initialPairs.forEach(({ key, value }) => {
+                    const b = hashFunction(key);
+                    buckets[b].push({ key, value });
+                });
+                return {
+                    buckets,
+                    highlighted: { bucket: -1, key: null }
+                };
+            }
         default:
             return {};
     }
