@@ -8,6 +8,8 @@ A comprehensive Flask-based web application for learning data structures through
 - **Theory Learning**: Comprehensive educational content for data structures
 - **Code Editor**: Live code execution with Python support
 - **Interactive Visualizers**: SVG-based animations for data structures
+  - Built-in step-by-step explanations for every operation
+  - Predefined demo values so you can explore immediately
 - **Quiz System**: Interactive quizzes with progress tracking
 - **Progress Tracking**: Persistent user progress across sessions
 - **Admin Dashboard**: User management and platform statistics
