@@ -155,6 +155,7 @@
                                 Account Type: <strong>{% if current_user.is_admin %}Administrator{% else %}Student{% endif %}</strong>
                             </p>
                         </div>
+                        {% if not current_user.is_admin %}
                         <div class="col-md-6">
                             <h6>Danger Zone</h6>
                             <p class="text-muted small mb-3">
@@ -164,6 +165,7 @@
                                 <i class="fas fa-trash"></i> Delete Account
                             </button>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -171,6 +173,7 @@
     </div>
 </div>
 
+{% if not current_user.is_admin %}
 <!-- Delete Account Modal -->
 <div class="modal fade" id="deleteAccountModal" tabindex="-1">
     <div class="modal-dialog">
@@ -206,6 +209,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <style>
 .avatar-circle {
@@ -313,31 +317,38 @@ function showDeleteConfirmation() {
 }
 
 // Enable delete button when checkbox is checked
-document.getElementById('confirmDelete').addEventListener('change', function() {
-    document.getElementById('confirmDeleteBtn').disabled = !this.checked;
-});
+const confirmDeleteCheckbox = document.getElementById('confirmDelete');
+if (confirmDeleteCheckbox) {
+    confirmDeleteCheckbox.addEventListener('change', function() {
+        const btn = document.getElementById('confirmDeleteBtn');
+        if (btn) btn.disabled = !this.checked;
+    });
+}
 
 // Handle account deletion
-document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-    if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
-        // Create a form and submit it
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/delete-account';
-        
-        // Add CSRF token if needed (Flask-WTF)
-        const csrfToken = document.querySelector('meta[name=csrf-token]');
-        if (csrfToken) {
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrf_token';
-            csrfInput.value = csrfToken.getAttribute('content');
-            form.appendChild(csrfInput);
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', function() {
+        if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/delete-account';
+            
+            // Add CSRF token if needed (Flask-WTF)
+            const csrfToken = document.querySelector('meta[name=csrf-token]');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken.getAttribute('content');
+                form.appendChild(csrfInput);
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
         }
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
-});
+    });
+}
 </script>
 {% endblock %}
