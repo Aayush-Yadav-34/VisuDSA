@@ -131,19 +131,32 @@ function updateProgressIndicator() {
     const progressElement = document.getElementById('progress-percentage');
     if (!progressElement) return;
     
-    let totalSections = 0;
-    let completedSections = 0;
-    
-    Object.values(progressData).forEach(module => {
-        Object.values(module).forEach(section => {
-            totalSections++;
-            if (section.completed) {
-                completedSections++;
-            }
+    // Prefer server-provided totals if available to ensure 100% only when all theory & quizzes complete
+    let percentage = 0;
+    if (progressData && progressData._meta && progressData._meta.totals) {
+        const theoryTotal = progressData._meta.totals.theory || 0;
+        const quizTotal = progressData._meta.totals.quiz || 0;
+        const theoryCompleted = (progressData._meta.completed && progressData._meta.completed.theory) || 0;
+        const quizCompleted = (progressData._meta.completed && progressData._meta.completed.quiz) || 0;
+        const total = theoryTotal + quizTotal;
+        const done = theoryCompleted + quizCompleted;
+        percentage = total > 0 ? Math.round((done / total) * 100) : 0;
+    } else {
+        // Fallback: compute from client data
+        let totalSections = 0;
+        let completedSections = 0;
+        Object.keys(progressData).forEach(moduleName => {
+            const module = progressData[moduleName];
+            if (!module || typeof module !== 'object') return;
+            Object.values(module).forEach(section => {
+                if (section && typeof section === 'object' && 'completed' in section) {
+                    totalSections++;
+                    if (section.completed) completedSections++;
+                }
+            });
         });
-    });
-    
-    const percentage = totalSections > 0 ? Math.round((completedSections / totalSections) * 100) : 0;
+        percentage = totalSections > 0 ? Math.round((completedSections / totalSections) * 100) : 0;
+    }
     progressElement.textContent = `${percentage}%`;
     
     // Update color based on progress

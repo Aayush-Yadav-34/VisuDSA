@@ -481,5 +481,28 @@ def get_progress():
             'completed': p.completed,
             'score': p.score
         }
-    
+    # Add meta totals to ensure 100% only when all theory and quizzes are completed
+    try:
+        theory_total = len(THEORY_CONTENT.keys())
+    except Exception:
+        theory_total = 0
+    try:
+        quiz_total = len(QUIZ_DATA.keys())
+    except Exception:
+        quiz_total = 0
+
+    theory_completed = sum(1 for v in progress_data.get('theory', {}).values() if v.get('completed'))
+    quiz_completed = sum(1 for v in progress_data.get('quiz', {}).values() if v.get('completed'))
+
+    progress_data['_meta'] = {
+        'totals': {
+            'theory': theory_total,
+            'quiz': quiz_total
+        },
+        'completed': {
+            'theory': theory_completed,
+            'quiz': quiz_completed
+        }
+    }
+
     return jsonify(progress_data)
