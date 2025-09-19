@@ -282,30 +282,30 @@ function loadProgressData() {
 }
 
 function updateProgressBars(progressData) {
-    // Calculate theory progress
-    const theoryModules = ['theory'];
-    let theoryCompleted = 0;
-    let theoryTotal = 0;
-    
-    if (progressData.theory) {
-        theoryTotal = Object.keys(progressData.theory).length;
-        theoryCompleted = Object.values(progressData.theory).filter(p => p.completed).length;
+    // Prefer server-provided totals to ensure 100% only when all sections completed
+    let theoryTotal = 0, theoryCompleted = 0;
+    let quizTotal = 0, quizCompleted = 0;
+
+    if (progressData && progressData._meta && progressData._meta.totals) {
+        theoryTotal = progressData._meta.totals.theory || 0;
+        quizTotal = progressData._meta.totals.quiz || 0;
+        theoryCompleted = (progressData._meta.completed && progressData._meta.completed.theory) || 0;
+        quizCompleted = (progressData._meta.completed && progressData._meta.completed.quiz) || 0;
+    } else {
+        if (progressData.theory) {
+            theoryTotal = Object.keys(progressData.theory).length;
+            theoryCompleted = Object.values(progressData.theory).filter(p => p.completed).length;
+        }
+        if (progressData.quiz) {
+            quizTotal = Object.keys(progressData.quiz).length;
+            quizCompleted = Object.values(progressData.quiz).filter(p => p.completed).length;
+        }
     }
-    
+
     const theoryPercentage = theoryTotal > 0 ? Math.round((theoryCompleted / theoryTotal) * 100) : 0;
     document.getElementById('theoryProgress').style.width = theoryPercentage + '%';
     document.getElementById('theoryProgressText').textContent = theoryPercentage + '%';
-    
-    // Calculate quiz progress
-    const quizModules = ['quiz'];
-    let quizCompleted = 0;
-    let quizTotal = 0;
-    
-    if (progressData.quiz) {
-        quizTotal = Object.keys(progressData.quiz).length;
-        quizCompleted = Object.values(progressData.quiz).filter(p => p.completed).length;
-    }
-    
+
     const quizPercentage = quizTotal > 0 ? Math.round((quizCompleted / quizTotal) * 100) : 0;
     document.getElementById('quizProgress').style.width = quizPercentage + '%';
     document.getElementById('quizProgressText').textContent = quizPercentage + '%';
