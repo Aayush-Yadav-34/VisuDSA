@@ -222,8 +222,17 @@ function displayProgressOverview(progressData) {
     
     modules.forEach(module => {
         const moduleData = progressData[module] || {};
-        const completed = Object.values(moduleData).filter(item => item.completed).length;
-        const total = Object.keys(moduleData).length;
+        let total = 0;
+        let completed = 0;
+        if (progressData._meta && progressData._meta.totals) {
+            total = progressData._meta.totals[module] || 0;
+            if (progressData._meta.completed) {
+                completed = progressData._meta.completed[module] || 0;
+            }
+        } else {
+            completed = Object.values(moduleData).filter(item => item.completed).length;
+            total = Object.keys(moduleData).length;
+        }
         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
         
         html += `
