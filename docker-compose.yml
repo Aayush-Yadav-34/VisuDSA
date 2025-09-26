@@ -9,3 +9,6 @@ services:
       - ./instance:/app/instance
     environment:
       - SESSION_SECRET=change-me-in-prod
+      # AI Chatbot configuration (set your actual key at deploy time)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=openrouter/auto

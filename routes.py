@@ -8,6 +8,10 @@ from data.quiz_data import QUIZ_DATA
 import uuid
 import logging
 from datetime import datetime
+import os
+import json
+from urllib import request as urlrequest
+from urllib.error import URLError, HTTPError
 
 @app.before_request
 def before_request():
@@ -516,3 +520,70 @@ def get_progress():
     }
 
     return jsonify(progress_data)
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    """Proxy user message to an external AI API and return its reply.
+    Configure via environment variables:
+      - OPENROUTER_API_KEY: API key for OpenRouter (https://openrouter.ai)
+      - OPENROUTER_MODEL: model id (default: 'openrouter/auto')
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        message = (data.get('message') or '').strip()
+        if not message:
+            return jsonify({'success': False, 'error': 'Empty message'}), 400
+
+        api_key = os.environ.get('OPENROUTER_API_KEY')
+        model = os.environ.get('OPENROUTER_MODEL', 'openrouter/auto')
+        if not api_key:
+            return jsonify({'success': False, 'error': 'Server not configured with AI API key'}), 500
+
+        payload = {
+            'model': model,
+            'messages': [
+                { 'role': 'system', 'content': 'You are VisuDSA assistant. Be concise and helpful about data structures, algorithms, and this learning platform.' },
+                { 'role': 'user', 'content': message }
+            ]
+        }
+
+        req = urlrequest.Request(
+            url='https://openrouter.ai/api/v1/chat/completions',
+            data=json.dumps(payload).encode('utf-8'),
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {api_key}',
+                # Optional headers for OpenRouter best practices
+                'HTTP-Referer': 'https://visudsa.local',
+                'X-Title': 'VisuDSA'
+            },
+            method='POST'
+        )
+        try:
+            with urlrequest.urlopen(req, timeout=20) as resp:
+                body = resp.read()
+                result = json.loads(body.decode('utf-8'))
+        except HTTPError as he:
+            logging.error(f"Chatbot HTTP error: {he.read().decode('utf-8') if he.fp else he}")
+            return jsonify({'success': False, 'error': 'AI API error'}), 502
+        except URLError as ue:
+            logging.error(f"Chatbot URL error: {ue}")
+            return jsonify({'success': False, 'error': 'AI API unreachable'}), 502
+
+        # Extract first choice text
+        reply = None
+        try:
+            choices = result.get('choices') or []
+            if choices:
+                reply = choices[0]['message']['content']
+        except Exception:
+            reply = None
+
+        if not reply:
+            return jsonify({'success': False, 'error': 'Empty AI response'}), 502
+
+        return jsonify({'success': True, 'reply': reply}), 200
+
+    except Exception as e:
+        logging.error(f"Chatbot error: {e}")
+        return jsonify({'success': False, 'error': 'Server error'}), 500

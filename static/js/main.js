@@ -412,3 +412,122 @@ window.DSLearningPlatform = {
     loadUserProgress,
     updateProgressIndicator
 };
+
+// Basic front-end chatbot stub (no ML backend yet)
+document.addEventListener('DOMContentLoaded', function () {
+    var sendBtn = document.getElementById('chatbot-send');
+    var inputEl = document.getElementById('chatbot-input');
+    var messagesEl = document.getElementById('chatbot-messages');
+    var clearBtn = document.getElementById('chatbot-clear');
+
+    function getStoredChat() {
+        try {
+            var raw = localStorage.getItem('visudsa_chat');
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function storeChat(entries) {
+        try {
+            localStorage.setItem('visudsa_chat', JSON.stringify(entries));
+        } catch (e) {
+            // ignore quota errors
+        }
+    }
+
+    function appendMessage(text, role) {
+        if (!messagesEl) return;
+        var div = document.createElement('div');
+        div.className = 'message ' + (role === 'user' ? 'user' : 'bot');
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        var history = getStoredChat();
+        history.push({ role: role, text: text, ts: Date.now() });
+        // Keep last 100 messages
+        if (history.length > 100) history = history.slice(history.length - 100);
+        storeChat(history);
+    }
+
+    function restoreChat() {
+        if (!messagesEl) return;
+        var history = getStoredChat();
+        if (!Array.isArray(history)) return;
+        // Filter out legacy "Conversation cleared." entries
+        history = history.filter(function (m) { return m && m.text !== 'Conversation cleared.'; });
+        messagesEl.innerHTML = '';
+        history.forEach(function (m) {
+            var div = document.createElement('div');
+            div.className = 'message ' + (m.role === 'user' ? 'user' : 'bot');
+            div.textContent = m.text;
+            messagesEl.appendChild(div);
+        });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function handleSend() {
+        if (!inputEl || !inputEl.value.trim()) return;
+        var userText = inputEl.value.trim();
+        appendMessage(userText, 'user');
+        inputEl.value = '';
+        // Call backend retrieval endpoint
+        try {
+            fetch('/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userText })
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (!data || data.success === false) {
+                    var err = (data && data.error) ? data.error : 'Sorry, I had trouble answering that. Please try again.';
+                    appendMessage(err, 'bot');
+                    return;
+                }
+                appendMessage(data.reply || 'No response.', 'bot');
+            })
+            .catch(function () {
+                appendMessage('Network error. Please try again later.', 'bot');
+            });
+        } catch (e) {
+            appendMessage('Unexpected error. Please try again later.', 'bot');
+        }
+    }
+
+    if (sendBtn) {
+        sendBtn.addEventListener('click', handleSend);
+    }
+    if (inputEl) {
+        inputEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            storeChat([]);
+            if (messagesEl) messagesEl.innerHTML = '';
+            // Optional: show a toast instead of persisting a message
+            if (window.DSLearningPlatform && typeof window.DSLearningPlatform.showToast === 'function') {
+                window.DSLearningPlatform.showToast('Conversation cleared', 'info', 2000);
+            }
+        });
+    }
+
+    // Restore on modal open
+    var chatbotModal = document.getElementById('chatbotModal');
+    if (chatbotModal) {
+        chatbotModal.addEventListener('shown.bs.modal', function () {
+            restoreChat();
+            if (messagesEl && messagesEl.children.length === 0) {
+                appendMessage('Hi! How can I help you learn data structures today?', 'bot');
+            }
+        });
+    }
+});

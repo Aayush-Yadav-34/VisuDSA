@@ -1,3 +1,45 @@
+/* Floating chatbot button */
+.chatbot-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #0d6efd;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 8px 20px rgba(13, 110, 253, 0.4);
+  text-decoration: none;
+  z-index: 1070; /* above toasts */
+  animation: chatbot-bob 2.8s ease-in-out infinite;
+}
+
+.chatbot-fab:hover {
+  background: #0b5ed7;
+  color: #fff;
+}
+
+@keyframes chatbot-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Chatbot modal */
+.chatbot-messages {
+  min-height: 200px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.message.bot { background: rgba(255,255,255,0.05); }
+.message.user { background: rgba(13,110,253,0.15); }
 /* Custom styles for the Data Structures Learning Platform */
 
 /* Code editor styling */
