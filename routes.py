@@ -222,6 +222,16 @@ def index():
     """Main landing page"""
     return render_template('index.html')
 
+@app.route('/faq')
+def faq():
+    """Frequently Asked Questions page"""
+    return render_template('faq.html')
+
+@app.route('/about')
+def about():
+    """About Us page"""
+    return render_template('about.html')
+
 @app.route('/theory')
 @app.route('/theory/<data_structure>')
 def theory(data_structure=None):

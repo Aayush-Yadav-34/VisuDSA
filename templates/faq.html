@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ - VisuDSA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-circle-question me-2"></i>Frequently Asked Questions</h1>
+
+    <div class="accordion" id="faqAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqOneHeading">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne" aria-expanded="true" aria-controls="faqOne">
+                    What is VisuDSA?
+                </button>
+            </h2>
+            <div id="faqOne" class="accordion-collapse collapse show" aria-labelledby="faqOneHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    VisuDSA is an interactive platform to learn data structures through theory, coding practice, and visual simulations.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqTwoHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+                    Do I need an account to use VisuDSA?
+                </button>
+            </h2>
+            <div id="faqTwo" class="accordion-collapse collapse" aria-labelledby="faqTwoHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    You can explore most features without an account. Creating an account lets you track progress and save activity.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqThreeHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+                    How can I report an issue or suggest a feature?
+                </button>
+            </h2>
+            <div id="faqThree" class="accordion-collapse collapse" aria-labelledby="faqThreeHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    Send us an email at <a href="mailto:support@visudsa.example">support@visudsa.example</a> with details and, if possible, screenshots.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqFourHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqFour" aria-expanded="false" aria-controls="faqFour">
+                    Which browsers are supported?
+                </button>
+            </h2>
+            <div id="faqFour" class="accordion-collapse collapse" aria-labelledby="faqFourHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    We support the latest versions of Chrome, Firefox, Edge, and Safari. For the best experience, keep your browser up to date.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqFiveHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqFive" aria-expanded="false" aria-controls="faqFive">
+                    What programming languages can I run in the Code Editor?
+                </button>
+            </h2>
+            <div id="faqFive" class="accordion-collapse collapse" aria-labelledby="faqFiveHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    The editor currently supports Python and JavaScript. We plan to add more languages in the future.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqSixHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqSix" aria-expanded="false" aria-controls="faqSix">
+                    How is my learning progress saved?
+                </button>
+            </h2>
+            <div id="faqSix" class="accordion-collapse collapse" aria-labelledby="faqSixHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    If you create an account and log in, your progress is saved to your profile so you can pick up where you left off on any device.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqSevenHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqSeven" aria-expanded="false" aria-controls="faqSeven">
+                    Can I contribute content or report bugs publicly?
+                </button>
+            </h2>
+            <div id="faqSeven" class="accordion-collapse collapse" aria-labelledby="faqSevenHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    Absolutely. Please reach out via email for contribution guidelines, or send detailed bug reports so we can reproduce and fix them quickly.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="faqEightHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqEight" aria-expanded="false" aria-controls="faqEight">
+                    How do you handle my data and privacy?
+                </button>
+            </h2>
+            <div id="faqEight" class="accordion-collapse collapse" aria-labelledby="faqEightHeading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    We only store essential account and progress information to provide core features. Contact us if you want your data exported or deleted.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

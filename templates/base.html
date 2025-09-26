@@ -138,16 +138,53 @@
     <footer class="bg-dark text-light py-4 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <h5>VisuDSA</h5>
                     <p class="mb-0">Learn data structures through theory, practice, and visualization.</p>
                 </div>
-                <!--<div class="col-md-6 text-md-end">
-                    <p class="mb-0">
-                        <i class="fas fa-code me-1"></i>
-                        Built with Flask & Vanilla JavaScript
-                    </p>
-                </div>-->
+                <div class="col-md-3 mt-3 mt-md-0">
+                    <h6>About Us</h6>
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-1">
+                        VisuDSA is an open learning platform to master data structures with
+                        interactive theory, coding, and visual simulations.
+                    </li>
+                    <li>
+                        <a class="link-light text-decoration-none small" href="{{ url_for('about') }}">
+                            <i class="fas fa-users me-1"></i> About Us
+                        </a>
+                    </li>
+                </div>
+                <div class="col-md-3 mt-3 mt-md-0">
+                    <h6>Contact</h6>
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-1">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a class="link-light text-decoration-none" href="mailto:aayushyadav9820@gmail.com">aayushyadav9820@gmail.com</a>
+                        </li>
+                        <li>
+                            <i class="fab fa-github me-2"></i>
+                            <a class="link-light text-decoration-none" href="https://github.com/Aayush-Yadav-34" target="_blank" rel="noopener">GitHub</a>
+                        </li>
+                        <li>
+                            <i class="fab fa-linkedin me-2"></i>
+                            <a class="link-light text-decoration-none" href="https://www.linkedin.com/in/aayush-yadav-2a92592a7/" target="_blank" rel="noopener">LinkedIn</a>
+                        </li>
+                        <li>
+                            <i class="fas fa-comment-dots me-2"></i>
+                            Feedback welcome!
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-1 mt-3 mt-md-0">
+                    <h6>FAQ</h6>
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-1">
+                            <a class="link-light text-decoration-none" href="{{ url_for('faq') }}">
+                                <i class="fas fa-circle-question me-1"></i> FAQ</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </footer>
