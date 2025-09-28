@@ -1,3 +1,6 @@
+
+[![View Live on Render](https://img.shields.io/badge/Live%20Demo-VisuDSA-blue?logo=render&style=for-the-badge)](https://visudsa.onrender.com)
+
 # VisuDSA - Interactive Data Structures Learning Platform
 
 A comprehensive Flask-based web application for learning data structures through theory, hands-on coding, visual demonstrations, and interactive quizzes.
