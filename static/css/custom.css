@@ -86,7 +86,7 @@
 
 #chatbot-send {
   border-radius: 10px;
-  background: linear-gradient(135deg, #232946, #0d6efd);
+  background: #0d6efd;
   border: none;
   color: var(--bs-light);
 }
