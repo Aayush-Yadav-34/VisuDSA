@@ -12,6 +12,7 @@ A comprehensive Flask-based web application for learning data structures through
   - Predefined demo values so you can explore immediately
 - **Quiz System**: Interactive quizzes with progress tracking
 - **Progress Tracking**: Persistent user progress across sessions
+- **AI Chatbot**: Intelligent assistant powered by OpenRouter API for real-time help
 - **Admin Dashboard**: User management and platform statistics
 
 ## Supported Data Structures
@@ -44,9 +45,12 @@ docker compose down
 
 #### Environment Variables
 You can set environment variables in `docker-compose.yml`:
-```
+```yaml
 SESSION_SECRET=your-strong-secret-key-here
 DATABASE_URL=sqlite:///instance/visudsa.db
+# AI Chatbot Configuration (optional)
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_MODEL=openrouter/auto
 ```
 
 ### Option 2: Local Python
@@ -54,7 +58,7 @@ DATABASE_URL=sqlite:///instance/visudsa.db
 - Python 3.11 or higher
 - pip (Python package manager)
 
-### Quick Start
+#### Quick Start
 
 1. **Clone or download** the project files to your desired directory
 
@@ -77,11 +81,14 @@ DATABASE_URL=sqlite:///instance/visudsa.db
 
 3. **Configure environment** (optional but recommended):
    
-   The application will work with default settings, but you can customize by editing `.env` file:
+   The application will work with default settings, but you can customize by creating a `.env` file:
    ```bash
    SESSION_SECRET=your-strong-secret-key-here
-   DATABASE_URL=sqlite:///instance/visudsa.db
+   DATABASE_URL=sqlite:///instance/data_structures_platform.db
    FLASK_ENV=development
+   # Optional: AI Chatbot configuration
+   OPENROUTER_API_KEY=your-openrouter-api-key
+   OPENROUTER_MODEL=openrouter/auto
    ```
 
 4. **Run the application**:
@@ -168,7 +175,7 @@ visudsa/
 │   ├── visualizer.html   # Visualizations
 │   └── quiz.html         # Quiz interface
 └── instance/
-    └── visudsa.db        # SQLite database (created automatically)
+    └── data_structures_platform.db  # SQLite database (created automatically)
 ```
 
 ## Configuration
@@ -184,6 +191,25 @@ The application uses SQLite by default. To use a different database:
    export DATABASE_URL=postgresql://username:password@localhost/visudsa
    ```
 
+### AI Chatbot Setup (Optional)
+
+The platform includes an AI-powered chatbot for real-time assistance. To enable it:
+
+1. **Get an API Key**: Sign up at [OpenRouter](https://openrouter.ai) and get your API key
+2. **Configure Environment Variables**:
+   ```bash
+   # For Docker
+   OPENROUTER_API_KEY=your-api-key-here
+   OPENROUTER_MODEL=openrouter/auto  # or specify a model like openrouter/meta-llama/llama-3.1-8b-instruct
+   
+   # For local development
+   export OPENROUTER_API_KEY=your-api-key-here
+   export OPENROUTER_MODEL=openrouter/auto
+   ```
+3. **Restart the Application**: The chatbot will be available as a floating button on all pages
+
+**Note**: Without an API key, the chatbot feature will be disabled but the platform remains fully functional.
+
 ### Security
 
 For production deployment:
@@ -192,6 +218,7 @@ For production deployment:
 2. Use HTTPS
 3. Configure a production database (PostgreSQL recommended)
 4. Update the default admin password
+5. Secure your AI API keys and never commit them to version control
 
 ## Usage
 
@@ -203,6 +230,7 @@ For production deployment:
 4. **Visualize**: Interact with data structure demonstrations
 5. **Take Quizzes**: Test your knowledge with interactive questions
 6. **Track Progress**: Monitor your learning journey
+7. **Get AI Help**: Use the floating chatbot for instant assistance with concepts
 
 ### For Administrators
 
@@ -234,8 +262,8 @@ The platform includes security measures for code execution:
 - **Frontend**: Bootstrap 5, CodeMirror, Font Awesome
 - **Database**: SQLite (configurable)
 - **Visualization**: SVG with D3.js-style interactions
+- **AI Integration**: OpenRouter API for intelligent chatbot assistance
 - **Security**: Werkzeug password hashing
-
 - **Containerization**: Docker, Docker Compose
 
 ## Requirements
@@ -261,6 +289,8 @@ Main packages:
 2. **Permission errors**: Ensure Python has write access to the project directory
 3. **Port conflicts**: Change the port in `main.py` if 5000 is in use
 4. **Code execution fails**: Check Python installation and security settings
+5. **Chatbot not working**: Verify your OpenRouter API key is correctly set in environment variables
+6. **Docker build fails**: Ensure Docker is running and you have sufficient disk space
 
 ### Support
 
@@ -268,6 +298,7 @@ For technical support or questions:
 - Check the console logs for error messages
 - Ensure all dependencies are installed correctly
 - Verify environment variables are set properly
+- For AI chatbot issues, check your OpenRouter API key and internet connection
 
 ## License
 
@@ -279,8 +310,19 @@ To contribute to this project:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Test thoroughly (including Docker setup)
+5. Update documentation if needed
+6. Submit a pull request
+
+### Development Setup
+
+For contributors:
+1. Clone the repository
+2. Install development dependencies: `pip install -r requirements.txt`
+3. Set up environment variables (see Configuration section)
+4. Run the application: `python main.py`
+5. Make your changes and test locally
+6. Test with Docker: `docker compose up --build`
 
 ---
 
