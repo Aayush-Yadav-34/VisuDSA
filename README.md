@@ -1,4 +1,5 @@
-[<img src="https://img.shields.io/badge/Live%20Demo-VisuDSA-blue?logo=render&style=for-the-badge" alt="View Live on Render" />](https://visudsa.onrender.com){:target="_blank"}
+
+[![View Live on Render](https://img.shields.io/badge/Live%20Demo-VisuDSA-blue?logo=render&style=for-the-badge)](https://visudsa.onrender.com)
 
 # VisuDSA - Interactive Data Structures Learning Platform
 
