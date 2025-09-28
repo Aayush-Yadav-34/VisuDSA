@@ -733,9 +733,101 @@ function renderDoublyLinkedListVisualization(svg) {
     const nodeHeight = 50;
     const nodeSpacing = 120;
     const startX = 50;
-    const startY = 250;
+    const startY = 200;
 
-    // Create nodes
+    if (data.length === 0) {
+        svg.append('text')
+            .attr('x', 400)
+            .attr('y', startY)
+            .text('Empty Doubly Linked List')
+            .attr('fill', '#6c757d')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 16);
+        return;
+    }
+
+    // Add arrowhead markers for next and prev
+    const defs = svg.append('defs');
+    
+    // Next arrow marker (blue, pointing right)
+    defs.append('marker')
+        .attr('id', 'dll-arrowhead-next')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 8)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#0d6efd');
+
+    // Prev arrow marker (green, pointing left)
+    defs.append('marker')
+        .attr('id', 'dll-arrowhead-prev')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 8)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#20c997');
+
+    // Draw forward arrows (next pointers) first - top arrows
+    for (let i = 0; i < data.length - 1; i++) {
+        const currentX = startX + i * nodeSpacing + nodeWidth;
+        const nextX = startX + (i + 1) * nodeSpacing;
+        const arrowY = startY + nodeHeight / 2 - 15; // Above center
+        
+        svg.append('line')
+            .attr('class', 'dll-link-next')
+            .attr('x1', currentX)
+            .attr('y1', arrowY)
+            .attr('x2', nextX)
+            .attr('y2', arrowY)
+            .attr('stroke', '#0d6efd')
+            .attr('stroke-width', 2)
+            .attr('marker-end', 'url(#dll-arrowhead-next)');
+        
+        // Add "next" label
+        svg.append('text')
+            .attr('x', (currentX + nextX) / 2)
+            .attr('y', arrowY - 8)
+            .text('next')
+            .attr('fill', '#0d6efd')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 10);
+    }
+
+    // Draw backward arrows (prev pointers) - bottom arrows
+    for (let i = 1; i < data.length; i++) {
+        const currentX = startX + i * nodeSpacing;
+        const prevX = startX + (i - 1) * nodeSpacing + nodeWidth;
+        const arrowY = startY + nodeHeight / 2 + 15; // Below center
+        
+        svg.append('line')
+            .attr('class', 'dll-link-prev')
+            .attr('x1', currentX)
+            .attr('y1', arrowY)
+            .attr('x2', prevX)
+            .attr('y2', arrowY)
+            .attr('stroke', '#20c997')
+            .attr('stroke-width', 2)
+            .attr('marker-end', 'url(#dll-arrowhead-prev)');
+        
+        // Add "prev" label
+        svg.append('text')
+            .attr('x', (currentX + prevX) / 2)
+            .attr('y', arrowY + 18)
+            .text('prev')
+            .attr('fill', '#20c997')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 10);
+    }
+
+    // Create nodes on top of arrows
     const nodes = svg.selectAll('.dll-node')
         .data(data)
         .enter()
@@ -749,7 +841,7 @@ function renderDoublyLinkedListVisualization(svg) {
         .attr('y', startY)
         .attr('width', nodeWidth)
         .attr('height', nodeHeight)
-        .attr('fill', '#fd7e14')
+        .attr('fill', (d, i) => visualizationData.highlightedIndex === i ? '#ffc107' : '#fd7e14')
         .attr('stroke', '#6c757d')
         .attr('stroke-width', 2)
         .attr('rx', 5);
@@ -762,58 +854,47 @@ function renderDoublyLinkedListVisualization(svg) {
         .text(d => d.value)
         .attr('fill', 'white')
         .attr('text-anchor', 'middle')
-        .attr('dominant-baseline', 'central');
+        .attr('dominant-baseline', 'central')
+        .attr('font-size', 16)
+        .attr('font-weight', 'bold');
 
-    // Next arrows (right)
-    nodes.filter((d, i) => d.next !== null)
-        .append('line')
-        .attr('class', 'dll-link-next')
-        .attr('x1', (d, i) => startX + i * nodeSpacing + nodeWidth)
-        .attr('y1', startY + nodeHeight / 2 - 10)
-        .attr('x2', (d, i) => startX + d.next * nodeSpacing)
-        .attr('y2', startY + nodeHeight / 2 - 10)
-        .attr('stroke', '#0d6efd')
-        .attr('stroke-width', 2)
-        .attr('marker-end', 'url(#dll-arrowhead-next)');
+    // Add NULL indicators for head's prev and tail's next
+    if (data.length > 0) {
+        // NULL for head's prev
+        svg.append('text')
+            .attr('x', startX - 30)
+            .attr('y', startY + nodeHeight / 2 + 15)
+            .text('NULL')
+            .attr('fill', '#6c757d')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 12);
 
-    // Prev arrows (left)
-    nodes.filter((d, i) => d.prev !== null)
-        .append('line')
-        .attr('class', 'dll-link-prev')
-        .attr('x1', (d, i) => startX + i * nodeSpacing)
-        .attr('y1', startY + nodeHeight / 2 + 10)
-        .attr('x2', (d, i) => startX + d.prev * nodeSpacing + nodeWidth)
-        .attr('y2', startY + nodeHeight / 2 + 10)
-        .attr('stroke', '#20c997')
-        .attr('stroke-width', 2)
-        .attr('marker-end', 'url(#dll-arrowhead-prev)');
+        // NULL for tail's next
+        svg.append('text')
+            .attr('x', startX + (data.length - 1) * nodeSpacing + nodeWidth + 30)
+            .attr('y', startY + nodeHeight / 2 - 15)
+            .text('NULL')
+            .attr('fill', '#6c757d')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 12);
 
-    // Add arrowhead markers for next and prev
-    svg.append('defs')
-        .append('marker')
-        .attr('id', 'dll-arrowhead-next')
-        .attr('viewBox', '0 -5 10 10')
-        .attr('refX', 8)
-        .attr('refY', 0)
-        .attr('markerWidth', 6)
-        .attr('markerHeight', 6)
-        .attr('orient', 'auto')
-        .append('path')
-        .attr('d', 'M0,-5L10,0L0,5')
-        .attr('fill', '#0d6efd');
+        // Head and Tail labels
+        svg.append('text')
+            .attr('x', startX + nodeWidth / 2)
+            .attr('y', startY - 10)
+            .text('HEAD')
+            .attr('fill', '#fd7e14')
+            .attr('text-anchor', 'middle')
+            .attr('font-weight', 'bold');
 
-    svg.append('defs')
-        .append('marker')
-        .attr('id', 'dll-arrowhead-prev')
-        .attr('viewBox', '0 -5 10 10')
-        .attr('refX', 2)
-        .attr('refY', 0)
-        .attr('markerWidth', 6)
-        .attr('markerHeight', 6)
-        .attr('orient', 'auto')
-        .append('path')
-        .attr('d', 'M10,-5L0,0L10,5')
-        .attr('fill', '#20c997');
+        svg.append('text')
+            .attr('x', startX + (data.length - 1) * nodeSpacing + nodeWidth / 2)
+            .attr('y', startY - 10)
+            .text('TAIL')
+            .attr('fill', '#fd7e14')
+            .attr('text-anchor', 'middle')
+            .attr('font-weight', 'bold');
+    }
 }
 
 /**
@@ -821,47 +902,199 @@ function renderDoublyLinkedListVisualization(svg) {
  */
 function renderArrayVisualization(svg) {
     const data = visualizationData.elements;
-    const cellWidth = 60;
-    const cellHeight = 50;
-    const startX = 50;
-    const startY = 150;
+    const cellWidth = 70;
+    const cellHeight = 60;
+    const startX = 80;
+    const startY = 180;
+    const maxVisibleElements = 12; // Limit for viewport
     
-    // Create cells
+    // Clear previous content
+    svg.selectAll('*').remove();
+    
+    if (data.length === 0) {
+        svg.append('text')
+            .attr('x', 400)
+            .attr('y', startY)
+            .text('Empty Array - Add elements to visualize')
+            .attr('fill', '#6c757d')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 16);
+        return;
+    }
+
+    // Add gradient definitions for better visual appeal
+    const defs = svg.append('defs');
+    
+    // Normal cell gradient
+    const normalGradient = defs.append('linearGradient')
+        .attr('id', 'normalCell')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '0%').attr('y2', '100%');
+    normalGradient.append('stop')
+        .attr('offset', '0%').attr('stop-color', '#4dabf7');
+    normalGradient.append('stop')
+        .attr('offset', '100%').attr('stop-color', '#0d6efd');
+
+    // Highlighted cell gradient
+    const highlightGradient = defs.append('linearGradient')
+        .attr('id', 'highlightCell')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '0%').attr('y2', '100%');
+    highlightGradient.append('stop')
+        .attr('offset', '0%').attr('stop-color', '#fff3cd');
+    highlightGradient.append('stop')
+        .attr('offset', '100%').attr('stop-color', '#ffc107');
+
+    // Draw array bracket (left)
+    svg.append('path')
+        .attr('d', `M ${startX - 15} ${startY - 10} 
+                    L ${startX - 5} ${startY - 10} 
+                    L ${startX - 5} ${startY + cellHeight + 10} 
+                    L ${startX - 15} ${startY + cellHeight + 10}`)
+        .attr('stroke', '#6c757d')
+        .attr('stroke-width', 3)
+        .attr('fill', 'none');
+
+    // Draw array bracket (right)
+    const endX = startX + Math.min(data.length, maxVisibleElements) * cellWidth;
+    svg.append('path')
+        .attr('d', `M ${endX + 5} ${startY - 10} 
+                    L ${endX + 15} ${startY - 10} 
+                    L ${endX + 15} ${startY + cellHeight + 10} 
+                    L ${endX + 5} ${startY + cellHeight + 10}`)
+        .attr('stroke', '#6c757d')
+        .attr('stroke-width', 3)
+        .attr('fill', 'none');
+
+    // Show scrolling indicator if array is too long
+    const displayData = data.length > maxVisibleElements ? 
+                       data.slice(0, maxVisibleElements) : data;
+    
+    if (data.length > maxVisibleElements) {
+        svg.append('text')
+            .attr('x', endX + 30)
+            .attr('y', startY + cellHeight/2)
+            .text(`... +${data.length - maxVisibleElements} more`)
+            .attr('fill', '#6c757d')
+            .attr('font-style', 'italic')
+            .attr('font-size', 12);
+    }
+
+    // Create cells group
     const cells = svg.selectAll('.array-cell')
-        .data(data)
+        .data(displayData)
         .enter()
         .append('g')
         .attr('class', 'array-cell-group');
     
-    // Cell rectangles
+    // Cell rectangles with enhanced styling
     cells.append('rect')
-        .attr('class', d => `array-cell ${visualizationData.highlightedIndex === data.indexOf(d) ? 'highlighted' : ''}`)
+        .attr('class', (d, i) => `array-cell cell-${i}`)
         .attr('x', (d, i) => startX + i * cellWidth)
         .attr('y', startY)
         .attr('width', cellWidth - 2)
         .attr('height', cellHeight)
-        .attr('fill', (d, i) => visualizationData.highlightedIndex === i ? '#ffc107' : '#0d6efd')
-        .attr('stroke', '#6c757d')
-        .attr('stroke-width', 2);
-    
-    // Cell values
+        .attr('fill', (d, i) => {
+            return visualizationData.highlightedIndex === i ? 
+                   'url(#highlightCell)' : 'url(#normalCell)';
+        })
+        .attr('stroke', '#495057')
+        .attr('stroke-width', 2)
+        .attr('rx', 8)
+        .attr('ry', 8);
+
+    // Add subtle shadow effect
+    cells.append('rect')
+        .attr('class', 'array-cell-shadow')
+        .attr('x', (d, i) => startX + i * cellWidth + 2)
+        .attr('y', startY + 2)
+        .attr('width', cellWidth - 2)
+        .attr('height', cellHeight)
+        .attr('fill', 'rgba(0,0,0,0.1)')
+        .attr('rx', 8)
+        .attr('ry', 8)
+        .style('z-index', -1);
+
+    // Cell values with better typography
     cells.append('text')
-        .attr('class', 'node-text')
+        .attr('class', 'array-value')
         .attr('x', (d, i) => startX + i * cellWidth + cellWidth / 2)
-        .attr('y', startY + cellHeight / 2)
+        .attr('y', startY + cellHeight / 2 + 2)
         .text(d => d)
         .attr('fill', 'white')
         .attr('text-anchor', 'middle')
-        .attr('dominant-baseline', 'central');
+        .attr('dominant-baseline', 'central')
+        .attr('font-size', 18)
+        .attr('font-weight', 'bold')
+        .attr('text-shadow', '1px 1px 2px rgba(0,0,0,0.3)');
     
-    // Index labels
+    // Index labels with better positioning
     cells.append('text')
         .attr('class', 'array-index')
         .attr('x', (d, i) => startX + i * cellWidth + cellWidth / 2)
-        .attr('y', startY - 10)
-        .text((d, i) => i)
-        .attr('fill', '#6c757d')
-        .attr('text-anchor', 'middle');
+        .attr('y', startY - 15)
+        .text((d, i) => i) // Use the actual array index
+        .attr('fill', '#495057')
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 14)
+        .attr('font-weight', 'bold');
+
+    // Add size indicator
+    svg.append('text')
+        .attr('x', startX)
+        .attr('y', startY + cellHeight + 25)
+        .text(`Array Size: ${data.length}`)
+        .attr('fill', '#495057')
+        .attr('font-size', 14)
+        .attr('font-weight', 'bold');
+
+    // Highlight animation for recently accessed element
+    if (visualizationData.highlightedIndex >= 0 && 
+        visualizationData.highlightedIndex < data.length) {
+        
+        const highlightIndex = visualizationData.highlightedIndex;
+        
+        // Only animate if the highlighted element is in the visible range
+        if (highlightIndex < maxVisibleElements) {
+            // Select the specific cell using the unique class
+            const highlightedCell = svg.select(`.cell-${highlightIndex}`);
+            
+            // Create a pulsing glow effect
+            if (highlightedCell.node()) {
+                // Add glowing effect
+                highlightedCell
+                    .attr('stroke', '#ffc107')
+                    .attr('stroke-width', 4)
+                    .attr('filter', 'drop-shadow(0 0 10px #ffc107)')
+                    .transition()
+                    .duration(600)
+                    .attr('stroke-width', 6)
+                    .attr('filter', 'drop-shadow(0 0 15px #ffc107)')
+                    .transition()
+                    .duration(600)
+                    .attr('stroke-width', 4)
+                    .attr('filter', 'drop-shadow(0 0 10px #ffc107)')
+                    .transition()
+                    .duration(600)
+                    .attr('stroke-width', 6)
+                    .attr('filter', 'drop-shadow(0 0 15px #ffc107)')
+                    .transition()
+                    .duration(600)
+                    .attr('stroke-width', 2)
+                    .attr('stroke', '#495057')
+                    .attr('filter', 'none');
+            }
+        }
+    }
+
+    // Add array label
+    svg.append('text')
+        .attr('x', startX - 20)
+        .attr('y', startY - 30)
+        .text('Array')
+        .attr('fill', '#495057')
+        .attr('font-size', 18)
+        .attr('font-weight', 'bold');
 }
 
 /**
@@ -873,7 +1106,18 @@ function renderLinkedListVisualization(svg) {
     const nodeHeight = 50;
     const nodeSpacing = 120;
     const startX = 50;
-    const startY = 150;
+    const startY = 200;
+
+    if (data.length === 0) {
+        svg.append('text')
+            .attr('x', 400)
+            .attr('y', startY)
+            .text('Empty Linked List')
+            .attr('fill', '#6c757d')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 16);
+        return;
+    }
     
     // Create nodes
     const nodes = svg.selectAll('.ll-node')
@@ -889,7 +1133,7 @@ function renderLinkedListVisualization(svg) {
         .attr('y', startY)
         .attr('width', nodeWidth)
         .attr('height', nodeHeight)
-        .attr('fill', '#28a745')
+        .attr('fill', (d, i) => visualizationData.highlightedIndex === i ? '#ffc107' : '#fd7e14')
         .attr('stroke', '#6c757d')
         .attr('stroke-width', 2)
         .attr('rx', 5);
@@ -904,22 +1148,12 @@ function renderLinkedListVisualization(svg) {
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'central');
     
-    // Arrows
-    nodes.filter((d, i) => i < data.length - 1)
-        .append('line')
-        .attr('class', 'link')
-        .attr('x1', (d, i) => startX + i * nodeSpacing + nodeWidth)
-        .attr('y1', startY + nodeHeight / 2)
-        .attr('x2', (d, i) => startX + (i + 1) * nodeSpacing)
-        .attr('y2', startY + nodeHeight / 2)
-        .attr('stroke', '#6c757d')
-        .attr('stroke-width', 2)
-        .attr('marker-end', 'url(#arrowhead)');
+    // Add arrowhead markers for next pointers
+    const defs = svg.append('defs');
     
-    // Add arrowhead marker
-    svg.append('defs')
-        .append('marker')
-        .attr('id', 'arrowhead')
+    // Next arrow marker (blue, pointing right)
+    defs.append('marker')
+        .attr('id', 'll-arrowhead-next')
         .attr('viewBox', '0 -5 10 10')
         .attr('refX', 8)
         .attr('refY', 0)
@@ -928,7 +1162,53 @@ function renderLinkedListVisualization(svg) {
         .attr('orient', 'auto')
         .append('path')
         .attr('d', 'M0,-5L10,0L0,5')
-        .attr('fill', '#6c757d');
+        .attr('fill', '#0d6efd');
+
+    // Draw forward arrows (next pointers) - center arrows
+    for (let i = 0; i < data.length - 1; i++) {
+        const currentX = startX + i * nodeSpacing + nodeWidth;
+        const nextX = startX + (i + 1) * nodeSpacing;
+        const arrowY = startY + nodeHeight / 2; // Center
+        
+        svg.append('line')
+            .attr('class', 'll-link-next')
+            .attr('x1', currentX)
+            .attr('y1', arrowY)
+            .attr('x2', nextX)
+            .attr('y2', arrowY)
+            .attr('stroke', '#0d6efd')
+            .attr('stroke-width', 2)
+            .attr('marker-end', 'url(#ll-arrowhead-next)');
+        
+        // Add "next" label
+        svg.append('text')
+            .attr('x', (currentX + nextX) / 2)
+            .attr('y', arrowY - 8)
+            .text('next')
+            .attr('fill', '#0d6efd')
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 10);
+    }
+
+    // Add HEAD/TAIL labels
+    if (data.length > 0) {
+        // Head and Tail labels
+        svg.append('text')
+            .attr('x', startX + nodeWidth / 2)
+            .attr('y', startY - 10)
+            .text('HEAD')
+            .attr('fill', '#fd7e14')
+            .attr('text-anchor', 'middle')
+            .attr('font-weight', 'bold');
+
+        svg.append('text')
+            .attr('x', startX + (data.length - 1) * nodeSpacing + nodeWidth / 2)
+            .attr('y', startY - 10)
+            .text('TAIL')
+            .attr('fill', '#fd7e14')
+            .attr('text-anchor', 'middle')
+            .attr('font-weight', 'bold');
+    }
 }
 
 /**
