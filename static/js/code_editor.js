@@ -184,12 +184,11 @@ function displayExecutionResult(result) {
             `\n\n--- Execution completed in ${DSLearningPlatform.formatExecutionTime(result.execution_time)} ---` : '';
         
         outputContainer.innerHTML = `
-            <div class="output-success">
-                <i class="fas fa-check-circle me-2"></i>
-                Execution successful:
+            <div class="output-success d-inline-flex align-items-center mb-1" style="font-size:0.98rem;gap:0.4rem;padding:0 0.25rem 0 0;">
+                <i class="fas fa-check-circle me-1" style="font-size:1.1em;"></i>
+                <span>Execution successful:</span>
             </div>
-            <hr>
-            <pre>${DSLearningPlatform.sanitizeHTML(output)}${executionTime}</pre>
+            <pre class="mb-0 mt-1" style="max-height:320px;overflow:auto;">${DSLearningPlatform.sanitizeHTML(output)}${executionTime}</pre>
         `;
         
         DSLearningPlatform.showToast('Code executed successfully!', 'success');
