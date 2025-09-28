@@ -3,6 +3,25 @@
 // Global variables
 let codeEditor;
 let isExecuting = false;
+const defaultPythonCode = `# Welcome to the Data Structures Code Editor!
+# Write your Python code here and click "Run Code" to execute it.
+
+# Example: Creating and using a simple list
+my_list = [1, 2, 3, 4, 5]
+print("Original list:", my_list)
+
+# Add an element
+my_list.append(6)
+print("After appending 6:", my_list)
+
+# Remove an element
+my_list.remove(3)
+print("After removing 3:", my_list)
+
+# Find an element
+if 4 in my_list:
+    print("Found 4 in the list at index:", my_list.index(4))
+`;
 
 // Initialize code editor when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,25 +60,7 @@ function initializeCodeEditor() {
     });
     
     // Set default code
-    codeEditor.setValue(`# Welcome to the Data Structures Code Editor!
-# Write your Python code here and click "Run Code" to execute it.
-
-# Example: Creating and using a simple list
-my_list = [1, 2, 3, 4, 5]
-print("Original list:", my_list)
-
-# Add an element
-my_list.append(6)
-print("After appending 6:", my_list)
-
-# Remove an element
-my_list.remove(3)
-print("After removing 3:", my_list)
-
-# Find an element
-if 4 in my_list:
-    print("Found 4 in the list at index:", my_list.index(4))
-`);
+    codeEditor.setValue(defaultPythonCode);
     
     // Make editor globally accessible
     window.codeEditor = codeEditor;
@@ -270,8 +271,7 @@ function updateEditorMode(language) {
  */
 function updateDefaultCode(language) {
     if (!codeEditor) return;
-    const defaultCode = `# Welcome to the Data Structures Code Editor!`
-    codeEditor.setValue(defaultCode);
+    codeEditor.setValue(defaultPythonCode);
 }
 
 /**
@@ -285,14 +285,14 @@ function loadCodeExample(button) {
         DSLearningPlatform.showToast('Code editor not initialized', 'danger');
         return;
     }
-    
-    // Confirm before loading if there's existing code
+
+    /** Confirm before loading if there's existing code
     const currentCode = codeEditor.getValue();
     if (currentCode.trim().length > 0 && currentCode !== defaultPythonCode) {
         if (!confirm('This will replace your current code. Continue?')) {
             return;
         }
-    }
+    }*/
     
     codeEditor.setValue(code);
     

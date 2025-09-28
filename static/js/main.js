@@ -91,14 +91,6 @@ function setupKeyboardShortcuts() {
  * Set up global event listeners
  */
 function setupGlobalEventListeners() {
-    // Handle example code loading
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('load-example')) {
-            e.preventDefault();
-            loadCodeExample(e.target);
-        }
-    });
-    
     // Handle responsive navigation
     const navbarToggler = document.querySelector('.navbar-toggler');
     if (navbarToggler) {
@@ -171,46 +163,6 @@ function updateProgressIndicator() {
             progressIndicator.classList.add('text-info');
         }
     }
-}
-
-/**
- * Load a code example into the editor
- */
-function loadCodeExample(button) {
-    const language = button.getAttribute('data-language');
-    const code = button.getAttribute('data-code');
-    
-    // Check if CodeMirror editor exists
-    if (window.codeEditor) {
-        window.codeEditor.setValue(code);
-        
-        // Update language selector
-        const languageSelect = document.getElementById('language-select');
-        if (languageSelect) {
-            languageSelect.value = language;
-            updateEditorMode(language);
-        }
-        
-        // Show success feedback
-        showToast('Code example loaded successfully!', 'success');
-    } else {
-        console.warn('Code editor not found');
-    }
-}
-
-/**
- * Update CodeMirror editor mode based on language
- */
-function updateEditorMode(language) {
-    if (!window.codeEditor) return;
-    
-    const modeMap = {
-        'python': 'python',
-        'javascript': 'javascript'
-    };
-    
-    const mode = modeMap[language] || 'text';
-    window.codeEditor.setOption('mode', mode);
 }
 
 /**
