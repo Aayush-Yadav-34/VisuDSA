@@ -25,21 +25,75 @@
   50% { transform: translateY(-8px); }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-content {
+  border-radius: 16px;
+  border: none;
+  background: #232946;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
 /* Chatbot modal */
 .chatbot-messages {
   min-height: 200px;
   max-height: 50vh;
   overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .message {
   padding: 10px 12px;
   border-radius: 8px;
   margin-bottom: 8px;
+  max-width: 80%;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease;
 }
 
-.message.bot { background: rgba(255,255,255,0.05); }
-.message.user { background: rgba(13,110,253,0.15); }
+.message.bot {
+    align-self: flex-start;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05); 
+    }
+.message.user {
+    align-self: flex-end;
+    border: 1px solid rgba(13,110,253,0.3);
+    background: rgba(13,110,253,0.15);
+    color: white;
+}
+.input-group {
+  background: #232946;
+  border-radius: 12px;
+  padding: 5px;
+}
+
+#chatbot-input {
+  background: transparent;
+  border: none;
+  color: white;
+}
+#chatbot-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+#chatbot-send {
+  border-radius: 10px;
+  background: linear-gradient(135deg, #232946, #0d6efd);
+  border: none;
+  color: var(--bs-light);
+}
+#chatbot-send:hover {
+  filter: brightness(1.1);
+}
+
 /* Custom styles for the Data Structures Learning Platform */
 
 /* Code editor styling */
