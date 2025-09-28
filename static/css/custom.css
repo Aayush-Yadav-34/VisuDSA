@@ -68,7 +68,7 @@
     background: rgba(13,110,253,0.15);
     color: white;
 }
-.input-group {
+#chatbotModal .input-group {
   background: #232946;
   border-radius: 12px;
   padding: 5px;
